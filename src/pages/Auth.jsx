@@ -1,285 +1,88 @@
 import React, { useState } from "react";
-import { FaUser, FaEnvelope, FaLock, FaBuilding, FaGraduationCap, FaHospitalUser, FaShieldAlt } from "react-icons/fa";
-import Navbar from "../components/Navbar";
-import Lottie from "lottie-react";
-import authAnimation from "../assets/auth.json";
-import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useAuth } from "../context/AuthContext";
+import { Shield, Lock, Mail, ArrowRight } from "lucide-react";
 
-const Auth = () => {
-  const { login, signup } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "user",
-    tenantType: "corporate", // corporate, education, healthcare
-    organizationName: "",
-    department: "",
-  });
-
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!isLogin && !isValidEmail(formData.email)) {
-      toast.error("Please enter a valid email address.");
-      return;
-    }
-
-    try {
-      if (isLogin) {
-        await login(formData.email, formData.password);
-        toast.success("Welcome back to Resolvix!");
-        navigate("/dashboard");
-      } else {
-        await signup(
-          formData.name,
-          formData.email,
-          formData.password,
-          formData.role,
-          formData.tenantType,
-          formData.organizationName,
-          formData.department
-        );
-        toast.success("Account created successfully! Please log in.");
-        setIsLogin(true);
-      }
-    } catch (error) {
-      toast.error(error.message || "Authentication failed.");
-    }
-  };
-
+export default function Auth() {
   return (
-    <div className="min-h-screen bg-[#030303] text-zinc-100 font-sans antialiased flex flex-col relative overflow-hidden">
-      {/* Ambient Radial Glow Elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[150px] pointer-events-none" />
+    <div className="min-h-screen w-screen flex items-center justify-center bg-[#FBFBF9] text-[#2C302E] font-sans antialiased selection:bg-[#9BC264]/30 overflow-x-hidden relative p-4">
 
-      <Navbar />
-      <ToastContainer theme="dark" />
+      {/* Ambient background blurs */}
+      <div className="absolute top-12 left-12 w-72 h-72 bg-[#9BC264]/10 rounded-full blur-[80px] pointer-events-none" />
+      <div className="absolute bottom-12 right-12 w-80 h-80 bg-[#9AB17A]/10 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="flex-grow flex items-center justify-center pt-24 pb-12 px-4 sm:px-6 relative z-10">
-        <div className="flex w-full max-w-5xl bg-zinc-900/20 border border-zinc-800/60 rounded-2xl backdrop-blur-xl shadow-2xl overflow-hidden min-h-[600px]">
+      {/* Main Auth Card */}
+      <div className="w-full max-w-md bg-[#FAFBF7] border border-[#9AB17A]/20 rounded-2xl p-8 shadow-sm relative z-10 space-y-6">
 
-          {/* Left Panel: Graphic & Content Branding */}
-          <div className="hidden lg:flex lg:w-1/2 bg-zinc-950/40 border-r border-zinc-900 p-12 flex-col justify-between items-center text-center">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-violet-400">
-                Secure Portal Access
-              </div>
-              <h2 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-100 to-zinc-400">
-                Enterprise Resolution Engine
-              </h2>
-              <p className="text-sm text-zinc-400 max-w-sm mx-auto">
-                Log in to access your isolated workspace instance, manage ticket escalations, or handle real-time compliance metrics.
-              </p>
-            </div>
-
-            <div className="w-full max-w-xs opacity-80 mix-blend-screen">
-              <Lottie animationData={authAnimation} className="w-full h-auto" />
-            </div>
-
-            <div className="text-xs text-zinc-600 tracking-wide font-mono">
-              RESOLVIX SHIELD V2.4 // DATA ENCRYPTED
-            </div>
+        {/* Branding Header */}
+        <div className="flex flex-col items-center text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-[#9BC264]/15 border border-[#9BC264]/40 flex items-center justify-center text-[#6E8D43]">
+            <Shield className="w-5 h-5 stroke-[2]" />
           </div>
-
-          {/* Right Panel: Clean Form Layout */}
-          <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center">
-            <div className="max-w-md w-full mx-auto space-y-8">
-
-              {/* Sliding Form Controls Alternative */}
-              <div className="flex p-1 bg-zinc-950 border border-zinc-800/80 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(true)}
-                  className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${isLogin ? "bg-zinc-800 text-violet-400 shadow-sm" : "text-zinc-400 hover:text-zinc-200"
-                    }`}
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(false)}
-                  className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${!isLogin ? "bg-zinc-800 text-violet-400 shadow-sm" : "text-zinc-400 hover:text-zinc-200"
-                    }`}
-                >
-                  Register
-                </button>
-              </div>
-
-              {/* Form Element */}
-              <form className="space-y-4" onSubmit={handleSubmit}>
-
-                {/* Field: Full Name (Signup Only) */}
-                {!isLogin && (
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-zinc-400">Full Name</label>
-                    <div className="flex items-center border border-zinc-800 bg-zinc-950/60 rounded-lg px-3 py-2.5 focus-within:border-violet-500/50 focus-within:ring-1 focus-within:ring-violet-500/50 transition-all">
-                      <FaUser className="text-zinc-500 mr-2.5 text-sm" />
-                      <input
-                        type="text"
-                        name="name"
-                        placeholder="John Doe"
-                        className="w-full bg-transparent outline-none text-sm text-zinc-200 placeholder-zinc-600"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Field: Email Address */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-400">Email Address</label>
-                  <div className="flex items-center border border-zinc-800 bg-zinc-950/60 rounded-lg px-3 py-2.5 focus-within:border-violet-500/50 focus-within:ring-1 focus-within:ring-violet-500/50 transition-all">
-                    <FaEnvelope className="text-zinc-500 mr-2.5 text-sm" />
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="name@organization.com"
-                      className="w-full bg-transparent outline-none text-sm text-zinc-200 placeholder-zinc-600"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Field: Password */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-zinc-400">Password</label>
-                  <div className="flex items-center border border-zinc-800 bg-zinc-950/60 rounded-lg px-3 py-2.5 focus-within:border-violet-500/50 focus-within:ring-1 focus-within:ring-violet-500/50 transition-all">
-                    <FaLock className="text-zinc-500 mr-2.5 text-sm" />
-                    <input
-                      type="password"
-                      name="password"
-                      placeholder="••••••••"
-                      className="w-full bg-transparent outline-none text-sm text-zinc-200 placeholder-zinc-600"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Dynamic Configuration Sections (Signup Only) */}
-                {!isLogin && (
-                  <div className="space-y-4 pt-2 border-t border-zinc-900">
-
-                    {/* Vertical / Tenant Context Mapping */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-zinc-400">Vertical Type</label>
-                        <div className="flex items-center border border-zinc-800 bg-zinc-950/60 rounded-lg px-3 py-2.5 focus-within:border-violet-500/50 transition-all">
-                          <FaBuilding className="text-zinc-500 mr-2.5 text-sm" />
-                          <select
-                            name="tenantType"
-                            className="w-full bg-transparent outline-none text-sm text-zinc-200 appearance-none [&>option]:bg-zinc-950 [&>option]:text-zinc-300"
-                            value={formData.tenantType}
-                            onChange={handleChange}
-                          >
-                            <option value="corporate">Corporate</option>
-                            <option value="education">Education</option>
-                            <option value="healthcare">Healthcare</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-zinc-400">Account Access</label>
-                        <div className="flex items-center border border-zinc-800 bg-zinc-950/60 rounded-lg px-3 py-2.5 focus-within:border-violet-500/50 transition-all">
-                          <FaShieldAlt className="text-zinc-500 mr-2.5 text-sm" />
-                          <select
-                            name="role"
-                            className="w-full bg-transparent outline-none text-sm text-zinc-200 appearance-none [&>option]:bg-zinc-950 [&>option]:text-zinc-300"
-                            value={formData.role}
-                            onChange={handleChange}
-                          >
-                            <option value="user">Complainant (User)</option>
-                            <option value="authority">Ombudsman / Authority</option>
-                            <option value="admin">Global Admin</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Conditional Field: Organization Metadata mapping */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-zinc-400">Organization Name</label>
-                      <div className="flex items-center border border-zinc-800 bg-zinc-950/60 rounded-lg px-3 py-2.5 focus-within:border-violet-500/50 transition-all">
-                        <FaGraduationCap className="text-zinc-500 mr-2.5 text-sm" />
-                        <input
-                          type="text"
-                          name="organizationName"
-                          placeholder={formData.tenantType === "education" ? "Stanford University" : formData.tenantType === "healthcare" ? "Mayo Clinic" : "Acme Corp"}
-                          className="w-full bg-transparent outline-none text-sm text-zinc-200 placeholder-zinc-600"
-                          value={formData.organizationName}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Conditional Field: Department Context Info */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-zinc-400">Department / Division Name</label>
-                      <div className="flex items-center border border-zinc-800 bg-zinc-950/60 rounded-lg px-3 py-2.5 focus-within:border-violet-500/50 transition-all">
-                        <FaHospitalUser className="text-zinc-500 mr-2.5 text-sm" />
-                        <input
-                          type="text"
-                          name="department"
-                          placeholder="e.g. Human Resources, Computer Science, Cardiology"
-                          className="w-full bg-transparent outline-none text-sm text-zinc-200 placeholder-zinc-600"
-                          value={formData.department}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                  </div>
-                )}
-
-                {/* Primary Form Action Button */}
-                <button
-                  type="submit"
-                  className="w-full mt-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium text-sm py-3 rounded-lg transition-all duration-200 shadow-lg shadow-violet-900/15 transform hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  {isLogin ? "Authenticate Credentials" : "Initialize Instance Account"}
-                </button>
-              </form>
-
-              {/* Toggle Interface Footer link */}
-              <p className="text-center text-sm text-zinc-500">
-                {isLogin ? "New to the platform?" : "Already registered?"}
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-violet-400 hover:text-violet-300 font-semibold ml-1.5 focus:outline-none transition-colors"
-                >
-                  {isLogin ? "Create account" : "Sign in here"}
-                </button>
-              </p>
-
-            </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-[#111311]">Welcome to resolvix</h1>
+            <p className="text-sm text-[#424744] mt-1">Please sign in to access your secure dashboard.</p>
           </div>
-
         </div>
+
+        {/* Form Controls */}
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+
+          {/* Username/Email Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#111311]">
+              Username or Email
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#424744]">
+                <Mail className="w-4 h-4 text-[#6E8D43]" />
+              </div>
+              <input
+                type="text"
+                placeholder="username@organization.com"
+                className="w-full bg-white border border-[#9AB17A]/30 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-[#111311] placeholder:text-[#424744]/40 focus:outline-none focus:border-2 focus:border-[#6E8D43] transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Password Input */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-bold uppercase tracking-wider text-[#111311]">
+                Password
+              </label>
+              <a href="#" className="text-xs font-semibold text-[#6E8D43] hover:underline focus:outline-none">
+                Forgot password?
+              </a>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#424744]">
+                <Lock className="w-4 h-4 text-[#6E8D43]" />
+              </div>
+              <input
+                type="password"
+                placeholder="••••••••"
+                className="w-full bg-white border border-[#9AB17A]/30 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-[#111311] placeholder:text-[#424744]/40 focus:outline-none focus:border-2 focus:border-[#6E8D43] transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full mt-2 group bg-[#111311] hover:bg-[#2C302E] text-[#FBFBF9] py-3 px-4 rounded-xl text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
+          >
+            Sign In
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </form>
+
+        {/* System Footnote */}
+        <div className="pt-4 border-t border-[#9AB17A]/15 text-center">
+          <p className="text-[11px] text-[#424744] font-medium">
+            © {new Date().getFullYear()} Labs Inc. Secure Data Separation Active.
+          </p>
+        </div>
+
       </div>
     </div>
   );
-};
-
-export default Auth;
+}
