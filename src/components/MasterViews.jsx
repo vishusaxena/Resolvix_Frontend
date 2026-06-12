@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import BoxCard, { CustomTable, InputGroup, Switch } from './UI';
-import { ArrowLeft, Plus, RotateCcw, Building2, Check } from 'lucide-react';
+import { ArrowLeft, Plus, RotateCcw, Building2, Check, Pencil } from 'lucide-react';
 
 // --- 1. OVERVIEW DASHBOARD VIEW ---
 export function DashboardView({ tenants, departments, roles, users }) {
@@ -47,7 +47,7 @@ export function DashboardView({ tenants, departments, roles, users }) {
 }
 
 // --- 2. TENANTS VIEW ---
-export function TenantsView({ tenants, newTenant, setNewTenant, onCreateTenant, reset }) {
+export function TenantsView({ tenants, newTenant, setNewTenant, onCreateTenant, reset, onEditTenant }) {
     const [showForm, setShowForm] = useState(false);
 
     // Controlled validator indicators based on presence of data
@@ -205,18 +205,14 @@ export function TenantsView({ tenants, newTenant, setNewTenant, onCreateTenant, 
                             renderRow={(t) => (
                                 <tr key={t.id} className="border-b border-zinc-100 last:border-none hover:bg-zinc-50/70 transition-colors">
                                     <td className="p-4 text-sm font-semibold text-zinc-900">
-                                        {t.tenantStatus ? (
-                                            <span className="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full">Active</span>
-                                        ) : (
-                                            <span className="px-2 py-1 text-xs font-medium bg-rose-100 text-rose-800 rounded-full">Inactive</span>
-                                        )}
+                                        <Switch checked={t.tenantStatus} />
                                     </td>
                                     <td className="p-4 text-sm text-zinc-600">{t.tenantCode}</td>
                                     <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantName}</td>
                                     <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantType}</td>
                                     <td className="p-4">
-                                        <button className="text-emerald-600 hover:text-emerald-800 font-medium text-sm">
-                                            Edit
+                                        <button className="text-emerald-600 hover:text-emerald-800 font-medium text-sm" onClick={() => { setShowForm(true); onEditTenant(t.tenantCode) }}>
+                                            <Pencil size={16} />
                                         </button>
                                     </td>
                                 </tr>
@@ -230,33 +226,94 @@ export function TenantsView({ tenants, newTenant, setNewTenant, onCreateTenant, 
 }
 
 // --- 3. DEPARTMENTS VIEW ---
-export function DepartmentsView({ departments, newDept, setNewDept, onAddDept }) {
+export function DepartmentsView({ tenants, departments, isOpen, onOpen, onClose, onAddDept, newDept, setNewDept }) {
     return (
         <div className="space-y-6 w-full">
-            <div>
-                <h1 className="text-lg font-bold text-zinc-800">Departments Registry</h1>
-                <p className="text-xs text-zinc-400">Configure corporate sections usable cross-tenant.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-3 shadow-sm">
-                    <InputGroup label="Department Label" placeholder="e.g. Neural Networks" value={newDept} onChange={e => setNewDept(e.target.value)} />
-                    <button onClick={onAddDept} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs py-1.5 rounded-md transition-colors">
-                        Save Dynamic Node
-                    </button>
-                </div>
-                <div className="md:col-span-2">
+
+            {!isOpen ? (
+                <>
+                    <div>
+                        <h1 className="text-lg font-bold text-zinc-800">Departments Registry</h1>
+                        <p className="text-xs text-zinc-400">Configure corporate sections usable cross-tenant.</p>
+                    </div>
                     <CustomTable
-                        headers={['System Index ID', 'Department Functional Header']}
+                        headers={['Tenant Code', 'Tenant Name', 'Tenant Type', 'Action']}
+                        data={tenants}
+                        renderRow={(t) => (
+                            <tr key={t.id} className="border-b border-zinc-100 last:border-none hover:bg-zinc-50/70 transition-colors">
+                                <td className="p-4 text-sm text-zinc-600">{t.tenantCode}</td>
+                                <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantName}</td>
+                                <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantType}</td>
+                                <td className="p-4">
+                                    <button className="text-emerald-600 hover:text-emerald-800 font-medium text-sm" onClick={() => onOpen(t.tenantCode)}>
+                                        <Pencil size={16} />
+                                    </button>
+                                </td>
+                            </tr>
+                        )}
+                    /></>) : (
+                <>
+
+                    <div className="mb-6 flex items-center gap-4">
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-zinc-200/70 rounded-full transition-colors text-zinc-600"
+                            aria-label="Go back"
+                        >
+                            <ArrowLeft size={20} />
+                        </button>
+                        <h1 className="text-xl font-bold tracking-tight text-zinc-900">Add Department</h1>
+                    </div>
+                    <BoxCard title="Department Details" borderColor="border-emerald-500" className="bg-white shadow-sm rounded-xl p-5 border border-zinc-200/80">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <InputGroup
+                                label="Department Code"
+                                placeholder="DEP-001"
+                                value={newDept.departmentCode}
+                                onChange={e => setNewDept({ ...newDept, departmentCode: e.target.value })}
+                                disabled
+                            />
+
+                            <InputGroup
+                                label="Department Name"
+                                placeholder="e.g. Human Resources"
+                                value={newDept.departmentName}
+                                onChange={e => setNewDept({ ...newDept, departmentName: e.target.value })}
+                            />
+
+                            <div className="flex items-end h-full pb-1">
+                                <Switch
+                                    checked={newDept.departmentStatus}
+                                    onChange={() => setNewDept({ ...newDept, departmentStatus: !newDept.departmentStatus })}
+                                    label="Active"
+                                />
+                            </div>
+                        </div>
+                        <button onClick={onAddDept} className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm px-4 py-2 rounded-lg inline-flex items-center gap-1.5 shadow-sm shadow-emerald-600/10 transition-all active:scale-[0.98]">
+                            <Plus size={16} />
+                            Add Department
+                        </button>
+                    </BoxCard>
+                    <CustomTable
+                        headers={['Department Code', 'Department Name', 'Status']}
                         data={departments}
-                        renderRow={(dept, index) => (
-                            <tr key={index} className="hover:bg-zinc-50/50">
-                                <td className="p-3 font-mono text-zinc-400">DEP-00{index + 1}</td>
-                                <td className="p-3 font-medium text-zinc-700">{dept}</td>
+                        renderRow={(dept) => (
+                            <tr key={dept.id} className="border-b border-zinc-100 last:border-none hover:bg-zinc-50/70 transition-colors">
+                                <td className="p-4 text-sm text-zinc-600">{dept.departmentCode}</td>
+                                <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{dept.departmentName}</td>
+                                <td className="p-4">
+                                    {dept.departmentStatus ? (
+                                        <span className="text-emerald-600 font-medium text-sm">Active</span>
+                                    ) : (
+                                        <span className="text-red-600 font-medium text-sm">Inactive</span>
+                                    )}
+                                </td>
                             </tr>
                         )}
                     />
-                </div>
-            </div>
+                </>
+            )}
+
         </div>
     );
 }

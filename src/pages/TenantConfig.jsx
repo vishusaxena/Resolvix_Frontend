@@ -11,14 +11,15 @@ import {
 import axios from 'axios';
 
 export default function TenantConfig() {
+    const [activeTenant, setActiveTenant] = useState(null);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [reset, setReset] = useState(false);
-
+    const [showDepartment, setShowDepartment] = useState(false);
     // --- RESTRUCTURED DATA ENGINE STATE ---
     const [tenants, setTenants] = useState([]);
 
-    const [departments, setDepartments] = useState(['Engineering Architecture', 'Human Capital Management', 'Enterprise Sales', 'Corporate Treasury']);
+    const [departments, setDepartments] = useState([]);
     const [roles, setRoles] = useState(['Superadmin Infrastructure', 'System Account Executive', 'Operational Unit Manager', 'Standard Access Node']);
     const [permissions] = useState([
         { id: 'p1', name: 'Read System Analytics Data', description: 'Permits entry access to read system execution dashboards and structural telemetry logs.' },
@@ -47,7 +48,11 @@ export default function TenantConfig() {
         },
         tenantStatus: true,
     });
-    const [newDept, setNewDept] = useState('');
+    const [newDept, setNewDept] = useState({
+        departmentName: '',
+        departmentCode: '',
+        departmentStatus: true,
+    });
     const [newRole, setNewRole] = useState('');
     const [newUser, setNewUser] = useState({ name: '', email: '', tenant: '', role: '', dept: '' });
     const [rolePermissions, setRolePermissions] = useState({ role: '', assigned: [] });
@@ -89,6 +94,35 @@ export default function TenantConfig() {
         }
     };
 
+    const handleEditTenant = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/tenant/${id}`);
+            if (response.data.status === 'success') {
+                setNewTenant(response.data.data);
+            }
+        } catch (err) {
+            console.error('Error fetching tenant:', err);
+        }
+    };
+
+    const handleAddDepartment = async (tenant) => {
+        try {
+            if (!newDept) return;
+
+            const response = await axios.post('http://localhost:5000/api/department', { ...newDept, tenantCode: activeTenant });
+            if (response.data.status === 'success') {
+                setDepartments([...departments, response.data.data]);
+                setNewDept({
+                    departmentName: '',
+                    departmentCode: '',
+                    departmentStatus: true,
+                });
+            }
+        } catch (err) {
+            console.error('Error adding department:', err);
+        }
+    }
+
     const handleAddUser = (e) => {
         e.preventDefault();
         if (!newUser.name || !newUser.email || !newUser.tenant) return;
@@ -127,10 +161,10 @@ export default function TenantConfig() {
                     <DashboardView tenants={tenants} departments={departments} roles={roles} users={users} />
                 )}
                 {activeTab === 'tenants' && (
-                    <TenantsView reset={reset} tenants={tenants} newTenant={newTenant} setNewTenant={setNewTenant} onCreateTenant={handleCreateTenant} />
+                    <TenantsView reset={reset} tenants={tenants} newTenant={newTenant} setNewTenant={setNewTenant} onCreateTenant={handleCreateTenant} onEditTenant={(id) => handleEditTenant(id)} />
                 )}
                 {activeTab === 'departments' && (
-                    <DepartmentsView departments={departments} newDept={newDept} setNewDept={setNewDept} onAddDept={() => { if (newDept) { setDepartments([...departments, newDept]); setNewDept(''); } }} />
+                    <DepartmentsView tenants={tenants} isOpen={showDepartment} onOpen={(tenant) => { setShowDepartment(true); setActiveTenant(tenant); }} onClose={() => setShowDepartment(false)} departments={departments} newDept={newDept} setNewDept={setNewDept} onAddDept={handleAddDepartment} />
                 )}
                 {activeTab === 'roles' && (
                     <RolesView roles={roles} newRole={newRole} setNewRole={setNewRole} onAddRole={() => { if (newRole) { setRoles([...roles, newRole]); setNewRole(''); } }} />

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axiosInstance from "../utils/axiosInstance"; 
+import axiosInstance from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Retrieved Token:", token); 
+      console.log("Retrieved Token:", token);
 
       if (!token) {
         setUser(null);
@@ -20,8 +20,8 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const response = await axiosInstance.get("/auth/profile"); 
-      console.log("User Data:", response.data); 
+      const response = await axiosInstance.get("/auth/profile");
+      console.log("User Data:", response.data);
 
       setUser(response.data);
     } catch (error) {
@@ -47,8 +47,8 @@ export const AuthProvider = ({ children }) => {
       });
 
       localStorage.setItem("token", response.data.token);
-      setUser(response.data.user); 
-      navigate("/dashboard"); 
+      setUser(response.data.user);
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login failed", error.response?.data || error.message);
     }
@@ -65,10 +65,10 @@ export const AuthProvider = ({ children }) => {
         year,
       });
 
-      setUser(response.data.user); 
+      setUser(response.data.user);
     } catch (error) {
       console.error("Signup failed", error.response?.data || error.message);
-      throw error; 
+      throw error;
     }
   };
 
