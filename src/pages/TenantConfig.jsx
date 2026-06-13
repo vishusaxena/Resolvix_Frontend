@@ -5,7 +5,6 @@ import {
     TenantsView,
     DepartmentsView,
     RolesView,
-    PermissionsView,
     UsersView
 } from '../components/MasterViews';
 import axios from 'axios';
@@ -16,21 +15,14 @@ export default function TenantConfig() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [reset, setReset] = useState(false);
     const [showDepartment, setShowDepartment] = useState(false);
+    const [showUsers, setShowUsers] = useState(false);
+
     // --- RESTRUCTURED DATA ENGINE STATE ---
     const [tenants, setTenants] = useState([]);
 
     const [departments, setDepartments] = useState([]);
-    const [roles, setRoles] = useState(['Superadmin Infrastructure', 'System Account Executive', 'Operational Unit Manager', 'Standard Access Node']);
-    const [permissions] = useState([
-        { id: 'p1', name: 'Read System Analytics Data', description: 'Permits entry access to read system execution dashboards and structural telemetry logs.' },
-        { id: 'p2', name: 'Write Pipeline Configurations', description: 'Enables creation parameters and permits mutations on pipeline structures.' },
-        { id: 'p3', name: 'Destructive Purge Authority', description: 'Grants high tier validation clearance to remove records permanently from master frames.' },
-        { id: 'p4', name: 'Directory Lifecycle Access', description: 'Permits creating, suspension, or updating target employee identities.' },
-    ]);
-
-    const [users, setUsers] = useState([
-        { id: 1, name: 'John Doe', email: 'john@acme.com', tenant: 'Acme Corp', role: 'Superadmin Infrastructure', dept: 'Engineering Architecture' },
-    ]);
+    const [roles, setRoles] = useState([]);
+    const [users, setUsers] = useState([]);
 
     // --- DISCRETE USER ACTIONS / TRANSACTIONS ---
     const [newTenant, setNewTenant] = useState({
@@ -53,9 +45,19 @@ export default function TenantConfig() {
         departmentCode: '',
         departmentStatus: true,
     });
-    const [newRole, setNewRole] = useState('');
-    const [newUser, setNewUser] = useState({ name: '', email: '', tenant: '', role: '', dept: '' });
-    const [rolePermissions, setRolePermissions] = useState({ role: '', assigned: [] });
+    const [newRole, setNewRole] = useState({
+        roleName: "",
+        roleStatus: true
+    });
+    const [newUser, setNewUser] = useState({
+        userCode: "",
+        name: "",
+        email: "",
+        password: "",
+        role: "",
+        department: "",
+        isActive: true
+    });
 
     const GetTenants = async () => {
         try {
@@ -105,7 +107,7 @@ export default function TenantConfig() {
         }
     };
 
-    const handleAddDepartment = async (tenant) => {
+    const handleAddDepartment = async () => {
         try {
             if (!newDept) return;
 
@@ -123,26 +125,86 @@ export default function TenantConfig() {
         }
     }
 
-    const handleAddUser = (e) => {
-        e.preventDefault();
-        if (!newUser.name || !newUser.email || !newUser.tenant) return;
-        setUsers([...users, { ...newUser, id: users.length + 1 }]);
-        setNewUser({ name: '', email: '', tenant: '', role: '', dept: '' });
+    const GetDepartments = async (tenantCode) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/department/${tenantCode}`);
+            if (response.data.status === 'success') {
+                setDepartments(response.data.data);
+            }
+        } catch (err) {
+            console.error('Error fetching departments:', err);
+        }
     };
 
-    const handleTogglePermission = (permName) => {
-        const isCurrentlySet = rolePermissions.assigned.includes(permName);
-        setRolePermissions({
-            ...rolePermissions,
-            assigned: isCurrentlySet
-                ? rolePermissions.assigned.filter(p => p !== permName)
-                : [...rolePermissions.assigned, permName]
-        });
+
+    const handleAddRole = async () => {
+        try {
+            if (!newRole) return;
+
+            const response = await axios.post('http://localhost:5000/api/roles', newRole);
+            if (response.data.status === 'success') {
+                GetRoles();
+                setNewRole({
+                    roleName: '',
+                    roleStatus: true,
+                });
+            }
+        } catch (err) {
+            console.error('Error adding department:', err);
+        }
+    }
+    const GetRoles = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/roles`);
+            if (response.data.status === 'success') {
+                setRoles(response.data.data);
+            }
+        } catch (err) {
+            console.error('Error fetching roles:', err);
+        }
+    };
+    const handleAddUser = async (e) => {
+        try {
+            if (!newUser) return;
+
+            const response = await axios.post('http://localhost:5000/api/auth/register', { ...newUser, tenantCode: activeTenant });
+            if (response.data.status === 'success') {
+                setUsers([...users, response.data.data]);
+                setNewUser({
+                    userCode: "",
+                    name: "",
+                    email: "",
+                    password: "",
+                    role: "",
+                    department: "",
+                    isActive: true
+                });
+            }
+        } catch (err) {
+            console.error('Error adding User:', err);
+        }
+    };
+
+    const GetUsers = async (tenantCode) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/auth/users/${tenantCode}`);
+            if (response.data.status === 'success') {
+                setUsers(response.data.data);
+            }
+        } catch (err) {
+            console.error('Error fetching departments:', err);
+        }
     };
 
     useEffect(() => {
         GetTenants();
+        GetRoles();
     }, [])
+
+    useEffect(() => {
+        setShowDepartment(false);
+        setShowUsers(false);
+    }, [activeTab])
 
     return (
         <div className="min-h-screen  bg-zinc-50 text-zinc-800 font-sans antialiased flex">
@@ -164,16 +226,16 @@ export default function TenantConfig() {
                     <TenantsView reset={reset} tenants={tenants} newTenant={newTenant} setNewTenant={setNewTenant} onCreateTenant={handleCreateTenant} onEditTenant={(id) => handleEditTenant(id)} />
                 )}
                 {activeTab === 'departments' && (
-                    <DepartmentsView tenants={tenants} isOpen={showDepartment} onOpen={(tenant) => { setShowDepartment(true); setActiveTenant(tenant); }} onClose={() => setShowDepartment(false)} departments={departments} newDept={newDept} setNewDept={setNewDept} onAddDept={handleAddDepartment} />
+                    <DepartmentsView tenants={tenants} isOpen={showDepartment} onOpen={(tenant) => { setShowDepartment(true); setActiveTenant(tenant); GetDepartments(tenant); }} onClose={() => setShowDepartment(false)} departments={departments} newDept={newDept} setNewDept={setNewDept} onAddDept={handleAddDepartment} />
                 )}
                 {activeTab === 'roles' && (
-                    <RolesView roles={roles} newRole={newRole} setNewRole={setNewRole} onAddRole={() => { if (newRole) { setRoles([...roles, newRole]); setNewRole(''); } }} />
+                    <RolesView roles={roles} newRole={newRole} setNewRole={setNewRole} onAddRole={handleAddRole} />
                 )}
-                {activeTab === 'permissions' && (
+                {/* {activeTab === 'permissions' && (
                     <PermissionsView roles={roles} permissions={permissions} rolePermissions={rolePermissions} setRolePermissions={setRolePermissions} onTogglePermission={handleTogglePermission} />
-                )}
+                )} */}
                 {activeTab === 'users' && (
-                    <UsersView users={users} tenants={tenants} roles={roles} departments={departments} newUser={newUser} setNewUser={setNewUser} onAddUser={handleAddUser} />
+                    <UsersView users={users} tenants={tenants} roles={roles} departments={departments} newUser={newUser} setNewUser={setNewUser} onAddUser={handleAddUser} onOpen={(tenant) => { setShowUsers(true); setActiveTenant(tenant); GetUsers(tenant); }} isOpen={showUsers} onClose={() => setShowUsers(false)} activeTenant={activeTenant} />
                 )}
             </main>
         </div>

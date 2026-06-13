@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import UserDashboard from "../components/UserDashboard";
 import AdminDashboard from "../components/AdminDashboard";
 import AuthorityDashboard from "../components/AuthorityDashboard";
+import TenantConfig from "./TenantConfig.jsx";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -20,16 +21,12 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="h-screen w-screen bg-[#030303] text-zinc-100 antialiased flex flex-col overflow-hidden">
-      {/* Global Top Navigation Bar */}
-      <Navbar />
-
+    <div className="">
       {/* Structural Offset - Takes exactly the remaining view height */}
-      <div className="flex-1 flex pt-16 overflow-hidden w-full">
-        {user.role === "user" && <UserDashboard />}
-        {user.role === "admin" && <AdminDashboard />}
-        {user.role === "authority" && <AuthorityDashboard />}
-      </div>
+      {user.role === "Complainant" && <UserDashboard />}
+      {user.role === "admin" && <AdminDashboard />}
+      {user.role === "authority" && <AuthorityDashboard />}
+      {user.role === "Superadmin" && <TenantConfig />}
     </div>
   );
 };

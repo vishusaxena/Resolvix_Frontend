@@ -7,6 +7,8 @@ import {
   FaChevronRight,
   FaFileInvoice
 } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
+import Sidebar from "./Sidebar";
 
 const CATEGORY_SUBCATEGORIES = {
   "Academic & Administrative": [
@@ -34,6 +36,7 @@ const CATEGORY_SUBCATEGORIES = {
 };
 
 const UserDashboard = () => {
+  const { user, loading, logout } = useAuth();
   const [grievances, setGrievances] = useState([]);
   const [filteredGrievances, setFilteredGrievances] = useState([]);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -129,48 +132,7 @@ const UserDashboard = () => {
     <div className="w-full flex h-screen bg-[#f8f9fa] text-slate-800 overflow-hidden font-sans">
 
       {/* Sidebar Navigation Panel - Matches Image Exactly */}
-      <aside className="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 h-full">
-        <div className="p-4 space-y-6">
-          <div className="flex items-center gap-2 px-3 pt-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#00875a]"></span>
-            <span className="font-bold text-base tracking-tight text-slate-900">Resolvix</span>
-          </div>
-
-          <nav className="space-y-1">
-            {[
-              { id: "dashboard", label: "Overview Dashboard", icon: <FaThLarge /> },
-              { id: "submit", label: "File a Grievance", icon: <FaFolderPlus /> },
-              { id: "status", label: "Track Status Matrices", icon: <FaTasks /> },
-              { id: "history", label: "User Master Directory", icon: <FaHistory /> },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center px-4 py-3 text-xs font-medium rounded-lg transition-all ${activeTab === tab.id
-                  ? "bg-slate-900 text-white font-semibold"
-                  : "text-slate-600 bg-transparent hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-              >
-                <span className="text-sm mr-3.5 opacity-80">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* User Module Footer Info - Image Style */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00875a] to-teal-600 flex items-center justify-center font-bold text-xs text-white shadow-sm">
-              SA
-            </div>
-            <div>
-              <p className="text-xs font-bold text-slate-900">Super Admin</p>
-              <p className="text-[10px] font-medium text-slate-400">Management Engine</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar />
 
       {/* Primary Display Content Grid View */}
       <main className="flex-1 w-full p-8 md:p-10 overflow-y-auto bg-[#f8f9fa]">

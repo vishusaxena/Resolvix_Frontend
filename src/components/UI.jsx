@@ -1,4 +1,5 @@
-import React from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
 // Minimalistic Light Input & Button Group
 export function InputGroup({ label, ...props }) {
@@ -32,9 +33,9 @@ export function InputGroup({ label, ...props }) {
 }
 
 // Clean Minimal Switch Toggle
-export function Switch({ checked, onChange, label }) {
+export function Switch({ checked, onChange, label, customClass = "justify-start" }) {
     return (
-        <div className="flex items-center justify-start ml-5">
+        <div className={`flex items-center ${customClass} ml-5`}>
             {label && (
                 <span className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mr-5 ">
                     {label}
@@ -219,3 +220,84 @@ export const Modal = ({
         </div>
     );
 };
+
+export function SelectBox({
+    label,
+    type,        // Pass "roles" or "departments"
+    tenantId,    // Pass the active tenant identifier string
+    value,       // Controlled component value (the selected code)
+    onChange,    // Function to handle value changes
+    placeholder = "Select an option..."
+}) {
+    const [options, setOptions] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        // Build URL query strings dynamically
+        const params = new URLSearchParams();
+        if (type) params.append('type', type);
+        if (tenantId) params.append('tenantId', tenantId);
+
+        // Prevent firing empty or invalid requests if neither is configured yet
+        if (!type && !tenantId) return;
+
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(`http://localhost:5000/api/data?${params.toString()}`);
+                if (response.data.success && response.data.data) {
+                    setOptions(response.data.data); // Targets the normalized data array safely
+                } else {
+                    setOptions([]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch select options:", error);
+                setOptions([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [tenantId, type]); // Fires fresh API queries automatically whenever these parameters mutate
+
+    return (
+        <div className="w-full">
+            {label && (
+                <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+                    {label}
+                </label>
+            )}
+            <div className="relative">
+                <select
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    disabled={loading || options.length === 0}
+                    className={`
+                        w-full appearance-none bg-white border border-slate-300 rounded-lg px-4 py-3 
+                        text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 
+                        focus:ring-teal-500 focus:border-teal-500 cursor-pointer
+                        ${(loading || options.length === 0) ? 'bg-zinc-50 cursor-not-allowed text-zinc-400' : 'hover:border-slate-400'}
+                    `}
+                >
+                    <option value="" disabled>
+                        {loading ? 'Loading items...' : placeholder}
+                    </option>
+
+                    {options.map((opt) => (
+                        <option key={opt.code} value={opt.name}>
+                            {opt.name}
+                        </option>
+                    ))}
+                </select>
+
+                {/* Micro chevron arrow dropdown indicator */}
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    );
+}

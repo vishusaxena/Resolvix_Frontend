@@ -10,6 +10,7 @@ import {
     ChevronLeft,
     ChevronRight
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar({ activeTab, setActiveTab, collapsed, setCollapsed, onLogout }) {
     const menuItems = [
@@ -17,9 +18,10 @@ export default function Sidebar({ activeTab, setActiveTab, collapsed, setCollaps
         { id: 'tenants', label: 'Tenants System', icon: Building2 },
         { id: 'departments', label: 'Departments Master', icon: FolderTree },
         { id: 'roles', label: 'Roles Architecture', icon: KeyRound },
-        { id: 'permissions', label: 'Access Matrices', icon: ShieldAlert },
         { id: 'users', label: 'User Master Directory', icon: Users },
     ];
+
+    const { user, loading, logout } = useAuth();
 
     return (
         <aside
@@ -61,7 +63,7 @@ export default function Sidebar({ activeTab, setActiveTab, collapsed, setCollaps
                                 onClick={() => setActiveTab(tab.id)}
                                 title={collapsed ? tab.label : ''}
                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 group relative ${isSelected
-                                    ? 'bg-zinc-900 text-white shadow-sm shadow-zinc-900/10'
+                                    ? 'bg-emerald-600 text-white shadow-sm shadow-zinc-900/10'
                                     : 'hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900'
                                     }`}
                             >
@@ -92,7 +94,7 @@ export default function Sidebar({ activeTab, setActiveTab, collapsed, setCollaps
                     {!collapsed && (
                         <div className="flex flex-col min-w-0">
                             <span className="text-sm font-bold text-zinc-800 tracking-tight leading-none mb-1 truncate">
-                                Super Admin
+                                {user.name}
                             </span>
                             <span className="text-[11px] font-medium text-zinc-400 leading-none truncate">
                                 Management Engine
@@ -103,7 +105,7 @@ export default function Sidebar({ activeTab, setActiveTab, collapsed, setCollaps
 
                 {/* Logout Action */}
                 <button
-                    onClick={onLogout}
+                    onClick={logout}
                     title={collapsed ? "Logout" : ""}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-all ${collapsed
                         ? 'justify-center text-zinc-400 hover:bg-zinc-100 hover:text-red-600'

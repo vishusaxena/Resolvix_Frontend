@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import BoxCard, { CustomTable, InputGroup, Switch } from './UI';
+import BoxCard, { CustomTable, InputGroup, SelectBox, Switch } from './UI';
 import { ArrowLeft, Plus, RotateCcw, Building2, Check, Pencil } from 'lucide-react';
 
 // --- 1. OVERVIEW DASHBOARD VIEW ---
@@ -328,19 +328,27 @@ export function RolesView({ roles, newRole, setNewRole, onAddRole }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                 <div className="bg-white border border-zinc-200 rounded-xl p-4 space-y-3 shadow-sm">
-                    <InputGroup label="Access Signature Authority Title" placeholder="e.g. Compliance Agent" value={newRole} onChange={e => setNewRole(e.target.value)} />
-                    <button onClick={onAddRole} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs py-1.5 rounded-md transition-colors">
-                        Instantiate Role Type
+                    <InputGroup label="Access Signature Authority Title" placeholder="e.g. Compliance Agent" value={newRole.roleName} onChange={e => setNewRole({ ...newRole, roleName: e.target.value })} />
+                    <Switch checked={newRole.roleStatus} label={"Active"} customClass={"justify-end"} onChange={(e) => setNewRole({ ...newRole, roleStatus: !newRole.roleStatus })} />
+                    <button onClick={onAddRole} className="flex justify-around items-center px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-md transition-colors">
+                        <Plus size={16} /> Add Role
                     </button>
                 </div>
                 <div className="md:col-span-2">
                     <CustomTable
-                        headers={['Hierarchy Tier Placement', 'Designation Key Definition']}
+                        headers={['Role Code', 'Role', 'Status']}
                         data={roles}
                         renderRow={(role, index) => (
                             <tr key={index} className="hover:bg-zinc-50/50">
-                                <td className="p-3 text-zinc-400 font-mono text-[11px]">Rank Protocol Stage {index + 1}</td>
-                                <td className="p-3 font-medium text-zinc-800">{role}</td>
+                                <td className="p-3 text-zinc-400 font-mono text-[11px]">{role.roleCode}</td>
+                                <td className="p-3 font-medium text-zinc-800">{role.roleName}</td>
+                                <td className="p-4">
+                                    {role.roleStatus ? (
+                                        <span className="text-emerald-600 font-medium text-sm">Active</span>
+                                    ) : (
+                                        <span className="text-red-600 font-medium text-sm">Inactive</span>
+                                    )}
+                                </td>
                             </tr>
                         )}
                     />
@@ -351,109 +359,165 @@ export function RolesView({ roles, newRole, setNewRole, onAddRole }) {
 }
 
 // --- 5. ASSIGN PERMISSIONS VIEW (SWITCH COMPONENT INTEGRATION) ---
-export function PermissionsView({ roles, permissions, rolePermissions, setRolePermissions, onTogglePermission }) {
-    return (
-        <div className="space-y-6 w-full">
-            <div>
-                <h1 className="text-lg font-bold text-zinc-800">Clearance Access Matrices</h1>
-                <p className="text-xs text-zinc-400">Map specific action scopes directly onto system security layers via toggle primitives.</p>
-            </div>
-            <div className="bg-white border border-zinc-200 rounded-xl p-5 space-y-4 shadow-sm">
-                <div className="max-w-xs">
-                    <label className="block text-[11px] font-bold text-zinc-400 uppercase mb-1">Target Access Architecture</label>
-                    <select
-                        value={rolePermissions.role}
-                        onChange={e => setRolePermissions({ ...rolePermissions, role: e.target.value })}
-                        className="w-full bg-white border border-zinc-200 rounded-md px-2.5 py-1.5 text-xs text-zinc-700 focus:outline-none focus:border-emerald-600"
-                    >
-                        <option value="">Select Target Assignment Template...</option>
-                        {roles.map((r, i) => <option key={i} value={r}>{r}</option>)}
-                    </select>
-                </div>
+// export function PermissionsView({ roles, permissions, rolePermissions, setRolePermissions, onTogglePermission }) {
+//     return (
+//         <div className="space-y-6 w-full">
+//             <div>
+//                 <h1 className="text-lg font-bold text-zinc-800">Clearance Access Matrices</h1>
+//                 <p className="text-xs text-zinc-400">Map specific action scopes directly onto system security layers via toggle primitives.</p>
+//             </div>
+//             <div className="bg-white border border-zinc-200 rounded-xl p-5 space-y-4 shadow-sm">
+//                 <div className="max-w-xs">
+//                     <label className="block text-[11px] font-bold text-zinc-400 uppercase mb-1">Target Access Architecture</label>
+//                     <select
+//                         value={rolePermissions.role}
+//                         onChange={e => setRolePermissions({ ...rolePermissions, role: e.target.value })}
+//                         className="w-full bg-white border border-zinc-200 rounded-md px-2.5 py-1.5 text-xs text-zinc-700 focus:outline-none focus:border-emerald-600"
+//                     >
+//                         <option value="">Select Target Assignment Template...</option>
+//                         {roles.map((r, i) => <option key={i} value={r}>{r}</option>)}
+//                     </select>
+//                 </div>
 
-                {rolePermissions.role ? (
-                    <div className="space-y-2 pt-2 border-t border-zinc-100">
-                        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wide mb-2">
-                            Toggle Matrix Operations For: "{rolePermissions.role}"
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {permissions.map((perm) => (
-                                <Switch
-                                    key={perm.id}
-                                    label={perm.name}
-                                    description={perm.description}
-                                    checked={rolePermissions.assigned.includes(perm.name)}
-                                    onChange={() => onTogglePermission(perm.name)}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="text-center py-8 border border-dashed border-zinc-200 rounded-xl text-zinc-400 text-xs italic">
-                        Select a target role configuration schema parameter above to map routing permission sets.
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
+//                 {rolePermissions.role ? (
+//                     <div className="space-y-2 pt-2 border-t border-zinc-100">
+//                         <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wide mb-2">
+//                             Toggle Matrix Operations For: "{rolePermissions.role}"
+//                         </label>
+//                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+//                             {permissions.map((perm) => (
+//                                 <Switch
+//                                     key={perm.id}
+//                                     label={perm.name}
+//                                     description={perm.description}
+//                                     checked={rolePermissions.assigned.includes(perm.name)}
+//                                     onChange={() => onTogglePermission(perm.name)}
+//                                 />
+//                             ))}
+//                         </div>
+//                     </div>
+//                 ) : (
+//                     <div className="text-center py-8 border border-dashed border-zinc-200 rounded-xl text-zinc-400 text-xs italic">
+//                         Select a target role configuration schema parameter above to map routing permission sets.
+//                     </div>
+//                 )}
+//             </div>
+//         </div>
+//     );
+// }
 
 // --- 6. USER MASTER CONFIGURATION VIEW ---
-export function UsersView({ users, tenants, roles, departments, newUser, setNewUser, onAddUser }) {
+export function UsersView({ newUser, setNewUser, users, onAddUser, tenants, onOpen, isOpen, onClose, activeTenant }) {
     return (
         <div className="space-y-6 w-full">
-            <div>
-                <h1 className="text-lg font-bold text-zinc-800">Directory Account Architectures</h1>
-                <p className="text-xs text-zinc-400">Register employee profiles and map explicit system constraints cleanly.</p>
-            </div>
-
-            <form onSubmit={onAddUser} className="bg-white border border-zinc-200 rounded-xl p-4 space-y-3 shadow-sm">
-                <h3 className="text-xs font-semibold text-zinc-700">Account Provisioning Fields</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    <InputGroup placeholder="Profile Handle Name" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} />
-                    <InputGroup placeholder="Operational Mail Gateway" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} />
-
-                    <select value={newUser.tenant} onChange={e => setNewUser({ ...newUser, tenant: e.target.value })} className="bg-white border border-zinc-200 rounded-md px-2 text-xs focus:outline-none focus:border-emerald-600 text-zinc-700">
-                        <option value="">Link Workspace</option>
-                        {tenants.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-                    </select>
-
-                    <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="bg-white border border-zinc-200 rounded-md px-2 text-xs focus:outline-none focus:border-emerald-600 text-zinc-700">
-                        <option value="">Apply Directive Role</option>
-                        {roles.map((r, i) => <option key={i} value={r}>{r}</option>)}
-                    </select>
-
-                    <select value={newUser.dept} onChange={e => setNewUser({ ...newUser, dept: e.target.value })} className="bg-white border border-zinc-200 rounded-md px-2 text-xs focus:outline-none focus:border-emerald-600 text-zinc-700">
-                        <option value="">Affiliate Department</option>
-                        {departments.map((d, i) => <option key={i} value={d}>{d}</option>)}
-                    </select>
+            {!isOpen ? (
+                <> <div>
+                    <h1 className="text-lg font-bold text-zinc-800">Directory Account Architectures</h1>
+                    <p className="text-xs text-zinc-400">Register employee profiles and map explicit system constraints cleanly.</p>
                 </div>
-                <div className="flex justify-end">
-                    <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-4 py-1.5 rounded-md transition-colors">
-                        Instantiate Profile Data
+                    <CustomTable
+                        headers={['Tenant Code', 'Tenant Name', 'Tenant Type', 'Action']}
+                        data={tenants}
+                        renderRow={(t) => (
+                            <tr key={t.id} className="border-b border-zinc-100 last:border-none hover:bg-zinc-50/70 transition-colors">
+                                <td className="p-4 text-sm text-zinc-600">{t.tenantCode}</td>
+                                <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantName}</td>
+                                <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantType}</td>
+                                <td className="p-4">
+                                    <button className="text-emerald-600 hover:text-emerald-800 font-medium text-sm" onClick={() => onOpen(t.tenantCode)}>
+                                        <Pencil size={16} />
+                                    </button>
+                                </td>
+                            </tr>
+                        )}
+                    /></>
+
+            ) : (
+                <> <div className="mb-6 flex items-center gap-4">
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-zinc-200/70 rounded-full transition-colors text-zinc-600"
+                        aria-label="Go back"
+                    >
+                        <ArrowLeft size={20} />
                     </button>
+                    <h1 className="text-xl font-bold tracking-tight text-zinc-900">Add Users</h1>
                 </div>
-            </form>
+                    <BoxCard title="User Details" borderColor="border-emerald-500" className="bg-white shadow-sm rounded-xl p-5 border border-zinc-200/80 ">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <InputGroup
+                                label="Name"
+                                placeholder="Name"
+                                onChange={e => setNewUser({ ...newUser, name: e.target.value })}
+                                value={newUser.name}
+                            />
+                            <InputGroup
+                                label="Email"
+                                placeholder="Email"
+                                onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                                value={newUser.email}
+                            />
+                            <InputGroup
+                                label="Password"
+                                placeholder="Password"
+                                onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                                value={newUser.password}
+                            />
+                            <SelectBox
+                                label="Assign Role"
+                                type="roles"
+                                placeholder="Select a Role"
+                                onChange={role => setNewUser({ ...newUser, role: role })}
+                                value={newUser.role}
+                            />
 
-            <CustomTable
-                headers={['Identity Reference Credentials', 'Assigned Infrastructure Node', 'System Level Authorization', 'Department Mapping Node']}
-                data={users}
-                renderRow={(u) => (
-                    <tr key={u.id} className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="p-3">
-                            <p className="font-medium text-zinc-800">{u.name}</p>
-                            <p className="text-[11px] text-zinc-400 font-mono">{u.email}</p>
-                        </td>
-                        <td className="p-3 text-zinc-600 font-medium">{u.tenant}</td>
-                        <td className="p-3">
-                            <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[11px] font-semibold border border-emerald-100">
-                                {u.role || 'System Default Scope'}
-                            </span>
-                        </td>
-                        <td className="p-3 text-zinc-500 font-medium">{u.dept || 'Unassigned Core'}</td>
-                    </tr>
-                )}
-            />
+                            <SelectBox
+                                label="Assign Department"
+                                type="departments"
+                                tenantId={activeTenant}
+                                placeholder="Select a department"
+                                onChange={dept => setNewUser({ ...newUser, department: dept })}
+                                value={newUser.department}
+                            />
+                            <Switch checked={newUser.isActive} label={"Active"} onChange={e => setNewUser({ ...newUser, isActive: !newUser.isActive })} customClass={"mt-5"} />
+
+
+                        </div>
+                        <button onClick={onAddUser} className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm px-4 py-2 rounded-lg inline-flex items-center gap-1.5 shadow-sm shadow-emerald-600/10 transition-all active:scale-[0.98]">
+                            <Plus size={16} />
+                            Add User
+                        </button>
+                    </BoxCard>
+                    <CustomTable
+                        headers={['User Code', 'Name', 'Email', 'Role', 'Department', 'Status']}
+                        data={users}
+                        renderRow={(u) => (
+                            <tr key={u.id} className="hover:bg-zinc-50/50 transition-colors">
+                                <td className="p-3">
+                                    <p className="font-medium text-zinc-800">{u.userCode}</p>
+                                </td>
+                                <td className="p-3 text-zinc-600 font-medium">{u.name}</td>
+                                <td className="p-3 text-zinc-600 font-medium">{u.email}</td>
+                                <td className="p-3">
+                                    <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[11px] font-semibold border border-emerald-100">
+                                        {u.role || 'System Default Scope'}
+                                    </span>
+                                </td>
+                                <td className="p-3 text-zinc-500 font-medium">{u.department || 'Unassigned Core'}</td>
+                                <td className="p-4">
+                                    {u.isActive ? (
+                                        <span className="text-emerald-600 font-medium text-sm">Active</span>
+                                    ) : (
+                                        <span className="text-red-600 font-medium text-sm">Inactive</span>
+                                    )}
+                                </td>
+                            </tr>
+                        )}
+                    /></>
+            )}
+
+
+
         </div>
     );
 }
