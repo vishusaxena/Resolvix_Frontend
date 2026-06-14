@@ -112,7 +112,7 @@ export default function App() {
               </p>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                <button onClick={() => navigate("/auth")} className="px-6 py-3 rounded-xl bg-[#9BC264] hover:bg-[#8AB153] text-[#111311] font-bold text-sm transition-all shadow-md flex items-center gap-2 group">
+                <button onClick={() => navigate("/dashboard")} className="px-6 py-3 rounded-xl bg-[#9BC264] hover:bg-[#8AB153] text-[#111311] font-bold text-sm transition-all shadow-md flex items-center gap-2 group">
                   Deploy Resolvix <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </button>
                 <button className="px-6 py-3 rounded-xl border border-[#2C302E]/20 hover:border-[#2C302E]/40 text-sm font-semibold transition-colors bg-white/60 text-[#2C302E]">

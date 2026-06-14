@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import {
+    LayoutDashboard,
+    Building2,
+    FolderTree,
+    KeyRound,
+    ShieldAlert,
+    Users,
+    LogOut,
+    ChevronLeft,
+    ChevronRight
+} from 'lucide-react';
+import {
     DashboardView,
     TenantsView,
     DepartmentsView,
@@ -8,6 +19,7 @@ import {
     UsersView
 } from '../components/MasterViews';
 import axios from 'axios';
+import ConfigurableDialog from '../components/ConfigurableDialog';
 
 export default function TenantConfig() {
     const [activeTenant, setActiveTenant] = useState(null);
@@ -16,6 +28,20 @@ export default function TenantConfig() {
     const [reset, setReset] = useState(false);
     const [showDepartment, setShowDepartment] = useState(false);
     const [showUsers, setShowUsers] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const [responseDetails, setResponseDetails] = useState({
+        trackingId: "",
+        accessKey: ""
+    });
+
+    const menuItems = [
+        { id: 'dashboard', label: 'Overview Dashboard', icon: LayoutDashboard },
+        { id: 'tenants', label: 'Tenants System', icon: Building2 },
+        { id: 'departments', label: 'Departments Master', icon: FolderTree },
+        { id: 'roles', label: 'Roles Architecture', icon: KeyRound },
+        { id: 'users', label: 'User Master Directory', icon: Users },
+    ];
+
 
     // --- RESTRUCTURED DATA ENGINE STATE ---
     const [tenants, setTenants] = useState([]);
@@ -67,6 +93,7 @@ export default function TenantConfig() {
             console.error('Error fetching tenants:', err);
         }
     };
+
     const handleCreateTenant = async () => {
         console.log("clicked")
         try {
@@ -88,6 +115,11 @@ export default function TenantConfig() {
                     },
                     tenantStatus: true,
                 });
+                setResponseDetails({
+                    trackingId: response.data.data.tenantCode,
+                    accessKey: response.data.data.tenantKey
+                })
+                setIsOpen(true);
             }
             GetTenants();
             setReset(!reset);
@@ -215,6 +247,19 @@ export default function TenantConfig() {
                 setActiveTab={setActiveTab}
                 collapsed={sidebarCollapsed}
                 setCollapsed={setSidebarCollapsed}
+                menuItems={menuItems}
+            />
+
+            <ConfigurableDialog
+                isOpen={isOpen}
+                onClose={() => setIsOpen(false)}
+                type="success" // Options: "info", "success", "warning", "danger"
+                title="Tenant Created Successfully"
+                description="Your Tenant is now active in the ledger database."
+                clipboardValue={responseDetails.accessKey} // Shows the clipboard tool
+                clipboardLabel="Secure Tracking Token"
+
+            /* Notice: onConfirm is left out completely here */
             />
 
             {/* Layout Main Right Context Viewport Container */}

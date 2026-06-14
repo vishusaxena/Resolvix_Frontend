@@ -1,10 +1,8 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import Navbar from "../components/Navbar";
-import UserDashboard from "../components/UserDashboard";
-import AdminDashboard from "../components/AdminDashboard";
-import AuthorityDashboard from "../components/AuthorityDashboard";
 import TenantConfig from "./TenantConfig.jsx";
+import UserDashboard from "./UserDashboard.jsx";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -23,10 +21,8 @@ const Dashboard = () => {
   return (
     <div className="">
       {/* Structural Offset - Takes exactly the remaining view height */}
-      {user.role === "Complainant" && <UserDashboard />}
-      {user.role === "admin" && <AdminDashboard />}
-      {user.role === "authority" && <AuthorityDashboard />}
       {user.role === "Superadmin" && <TenantConfig />}
+
     </div>
   );
 };
