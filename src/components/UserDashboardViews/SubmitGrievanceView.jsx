@@ -15,6 +15,7 @@ import FileUploader from '../../utils/hooks';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import ConfigurableDialog from '../ConfigurableDialog';
+import { SelectBox } from '../UI';
 
 export default function SubmitGrievanceView() {
     const { tenantCode } = useParams()
@@ -216,22 +217,14 @@ export default function SubmitGrievanceView() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1">Target Department</label>
-                                    <select className="w-full text-xs font-bold border border-zinc-200 rounded-lg p-2.5 bg-zinc-50/50 focus:bg-white outline-none transition-all"
+                                    <SelectBox
+                                        label="Target Department"
+                                        type="departments"
+                                        tenantId={tenantCode}
+                                        placeholder="Select a department"
+                                        onChange={dept => setFormData({ ...formData, complaintDepartment: { departmentCode: dept, departmentName: dept } })}
                                         value={formData.complaintDepartment.departmentCode}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                complaintDepartment: {
-                                                    departmentCode: e.target.value,
-                                                    departmentName: e.target.value,
-                                                },
-                                            })
-                                        }
-                                    >
-                                        <option value="">Select Target Branch...</option>
-                                        {departments.map((dept, idx) => <option key={idx} value={dept}>{dept}</option>)}
-                                    </select>
+                                    />
                                 </div>
                             </div>
 

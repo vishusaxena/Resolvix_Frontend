@@ -4,8 +4,23 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import DashboardView from '../components/HODDashboardViews/DashboardView';
 import AllGrievancesView from '../components/HODDashboardViews/AllGrievancesView';
+import axios from 'axios';
+import AssignGrievancesView from '../components/HODDashboardViews/AssignGrievancesView';
+import DepartmentTeamManagementView from '../components/HODDashboardViews/DepartmentTeamManagementView';
 const HODDashboard = () => {
     const { tenantCode } = useParams();
+    const token = localStorage.getItem("token");
+    const [userData, setUserData] = useState({
+        name: "",
+        departmentL: "",
+        role: "",
+        tenantName: "",
+    })
+    const [grievances, setGrievances] = useState({
+        data: [],
+        headers: [],
+        filters: []
+    });
     const hodNavigation = [
         {
             category: "Overview",
@@ -85,6 +100,53 @@ const HODDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+
+    const GetDepartmentData = async () => {
+        try {
+            console.log("called...", tenantCode);
+            const response = await axios.get(`http://localhost:5000/api/auth/department-info`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log(response);
+            if (response.data.status === 'success') {
+                setUserData({
+                    name: response.data.data.name,
+                    department: response.data.data.department,
+                    role: response.data.data.role,
+                    tenantName: response.data.data.tenantName
+                })
+            }
+        } catch (err) {
+            console.error('Error fetching departments:', err);
+        }
+    };
+    const GetGrievanceData = async () => {
+        try {
+            console.log("called...", tenantCode);
+            const response = await axios.get(`http://localhost:5000/api/grievances/department`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log(response);
+            if (response.data.status === 'success') {
+                setGrievances({
+                    data: response.data.data,
+                    headers: response.data.headersKey,
+                    filters: response.data.filters
+                })
+            }
+        } catch (err) {
+            console.error('Error fetching departments:', err);
+        }
+    };
+    useEffect(() => {
+        GetDepartmentData();
+        GetGrievanceData();
+    }, [])
+
     return (
         <div className="min-h-screen  bg-zinc-50 text-zinc-800 font-sans antialiased flex">
 
@@ -100,10 +162,16 @@ const HODDashboard = () => {
 
             <main className={`flex-1   mx-auto w-full transition-all duration-300 flex  ${sidebarCollapsed ? "ml-20" : "ml-64"} `}>
                 {activeTab === 'dashboard' && (
-                    <DashboardView />
+                    <DashboardView userData={userData} />
                 )}
                 {activeTab === 'all-grievances' && (
-                    <AllGrievancesView />
+                    <AllGrievancesView grievances={grievances.data} headers={grievances.headers} filters={grievances.filters} />
+                )}
+                {activeTab === 'assign-grievances' && (
+                    <AssignGrievancesView grievances={grievances.data} />
+                )}
+                {activeTab === 'authorities' && (
+                    <DepartmentTeamManagementView />
                 )}
             </main>
         </div>

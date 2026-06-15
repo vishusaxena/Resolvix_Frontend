@@ -197,28 +197,27 @@ export function TenantsView({ tenants, newTenant, setNewTenant, onCreateTenant, 
                         </div>
                     </div>
                 ) : (
-                    /* Clean Light Styled Table container wrapper */
-                    <div className="bg-white rounded-xl shadow-sm border border-zinc-200/80 overflow-hidden">
-                        <CustomTable
-                            headers={['Tenant Status', 'Tenant Code', 'Tenant Name', 'Tenant Type', 'Action']}
-                            data={tenants}
-                            renderRow={(t) => (
-                                <tr key={t.id} className="border-b border-zinc-100 last:border-none hover:bg-zinc-50/70 transition-colors">
-                                    <td className="p-4 text-sm font-semibold text-zinc-900">
-                                        <Switch checked={t.tenantStatus} />
-                                    </td>
-                                    <td className="p-4 text-sm text-zinc-600">{t.tenantCode}</td>
-                                    <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantName}</td>
-                                    <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantType}</td>
-                                    <td className="p-4">
-                                        <button className="text-emerald-600 hover:text-emerald-800 font-medium text-sm" onClick={() => { setShowForm(true); onEditTenant(t.tenantCode) }}>
-                                            <Pencil size={16} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            )}
-                        />
-                    </div>
+
+                    <CustomTable
+                        headers={['Tenant Status', 'Tenant Code', 'Tenant Name', 'Tenant Type', 'Action']}
+                        data={tenants}
+                        renderRow={(t) => (
+                            <tr key={t.id} className="border-b border-zinc-100 last:border-none hover:bg-zinc-50/70 transition-colors">
+                                <td className="p-4 text-sm font-semibold text-zinc-900">
+                                    <Switch checked={t.tenantStatus} />
+                                </td>
+                                <td className="p-4 text-sm text-zinc-600">{t.tenantCode}</td>
+                                <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantName}</td>
+                                <td className="p-4 font-mono text-xs text-emerald-600 font-medium">{t.tenantType}</td>
+                                <td className="p-4">
+                                    <button className="text-emerald-600 hover:text-emerald-800 font-medium text-sm" onClick={() => { setShowForm(true); onEditTenant(t.tenantCode) }}>
+                                        <Pencil size={16} />
+                                    </button>
+                                </td>
+                            </tr>
+                        )}
+                    />
+
                 )}
             </div>
         </div>

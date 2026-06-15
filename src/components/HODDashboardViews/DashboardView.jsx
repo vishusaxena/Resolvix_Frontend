@@ -5,7 +5,7 @@ import {
     GitFork, LogOut, Bell, HelpCircle, AlertTriangle
 } from 'lucide-react';
 
-const DashboardView = () => {
+const DashboardView = ({ userData }) => {
     // Mock data matching watermarked_img_14537528090858806961.png specs
     const stats = [
         { label: 'Total Pending', value: '42', trend: 'up', color: 'text-emerald-600' },
@@ -42,7 +42,7 @@ const DashboardView = () => {
                     <div className="flex items-center space-x-4">
                         {/* TIBL Corporate Tenant Identity Logo Placement */}
                         <div className="flex items-center bg-neutral-100 px-3 py-1.5 rounded-md border border-neutral-200">
-                            <span className="text-xs font-black tracking-widest text-emerald-800">TIBL</span>
+                            <span className="text-xs font-black tracking-widest text-emerald-800">{userData.tenantName}</span>
                         </div>
                     </div>
 
@@ -50,8 +50,8 @@ const DashboardView = () => {
                     <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-3 border-r border-neutral-200 pr-4">
                             <div className="text-right">
-                                <p className="text-sm font-semibold text-neutral-800">HOD - Dr. Sarah Chen</p>
-                                <p className="text-xs text-neutral-500">TIBL - Management Engine</p>
+                                <p className="text-sm font-semibold text-neutral-800">{`${userData.role} - ${userData.name}`}</p>
+                                <p className="text-xs text-neutral-500">{userData.tenantName} - Management Engine</p>
                             </div>
                             <div className="w-9 h-9 rounded-full bg-neutral-200 overflow-hidden border border-neutral-300">
                                 <div className="w-full h-full bg-slate-400 flex items-center justify-center text-white text-xs font-bold">SC</div>
@@ -75,7 +75,7 @@ const DashboardView = () => {
                     {/* Section View Heading Label */}
                     <div>
                         <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-                            HOD Grievance Dashboard - Computer Science (TIBL)
+                            HOD Grievance Dashboard - {userData.department}
                         </h1>
                     </div>
 

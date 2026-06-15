@@ -16,7 +16,7 @@ const App = () => {
         <Route path="/auth" element={<PublicRoutes><Auth /></PublicRoutes>} />
         <Route path="/dashboard" element={<PrivateRoutes> <Dashboard /></PrivateRoutes>} />
         <Route path="/dashboard/userview/:tenantCode" element={<PublicRoutes><UserDashboard /></PublicRoutes>} />
-        <Route path="/dashboard/hodview" element={<PublicRoutes><HODDashboard /></PublicRoutes>} />
+        <Route path="/dashboard/hodview" element={<PrivateRoutes><HODDashboard /></PrivateRoutes>} />
 
       </Routes>
     </div>

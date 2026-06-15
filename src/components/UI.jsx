@@ -1,5 +1,13 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import {
+    Search,
+    SlidersHorizontal,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight
+} from "lucide-react";
 
 // Minimalistic Light Input & Button Group
 export function InputGroup({ label, ...props }) {
@@ -57,32 +65,227 @@ export function Switch({ checked, onChange, label, customClass = "justify-start"
 }
 
 // Elite High-Density Data Table
-export function CustomTable({ headers, data, renderRow }) {
+
+
+
+export function CustomTable({
+    headers,
+    data = [],
+    renderRow,
+    searchKeys = [],
+    filters = [],
+    itemsPerPage = 10
+}) {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterValues, setFilterValues] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Filtering + Search
+    const filteredData = useMemo(() => {
+        return data.filter((item) => {
+            const matchesSearch =
+                !searchTerm ||
+                searchKeys.some((key) =>
+                    String(item[key] || "")
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+                );
+
+            const matchesFilters = filters.every((filter) => {
+                const value = filterValues[filter.key] || "All";
+
+                if (value === "All") return true;
+
+                return item[filter.key] === value;
+            });
+
+            return matchesSearch && matchesFilters;
+        });
+    }, [data, searchTerm, filterValues, filters, searchKeys]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterValues]);
+
+    const totalPages =
+        Math.ceil(filteredData.length / itemsPerPage) || 1;
+
+    const paginatedData = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredData.slice(start, start + itemsPerPage);
+    }, [filteredData, currentPage, itemsPerPage]);
+
     return (
-        <div className="w-full bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-zinc-200 bg-zinc-50 text-zinc-500 font-medium tracking-wide">
-                            {headers.map((head, i) => (
-                                <th key={i} className="p-4 font-semibold text-slate-600">
-                                    {head}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-100">
-                        {data?.length > 0 ? (
-                            data.map((item, idx) => renderRow(item, idx))
-                        ) : (
-                            <tr>
-                                <td colSpan={headers.length} className="p-4">
-                                    No records found in this view master.
-                                </td>
+        <div className="space-y-4">
+
+            {/* Search + Filters */}
+            <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
+
+                <div className="relative w-full sm:w-80">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={(e) =>
+                            setSearchTerm(e.target.value)
+                        }
+                        className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                </div>
+
+                {filters.length > 0 && (
+                    <div className="flex flex-wrap gap-3 items-center">
+                        <div className="flex items-center gap-2 text-xs text-zinc-500 bg-zinc-50 border border-zinc-100 px-2.5 py-1.5 rounded-lg">
+                            <SlidersHorizontal size={14} />
+                            <span className="font-medium">
+                                Filters
+                            </span>
+                        </div>
+
+                        {filters.map((filter) => (
+                            <select
+                                key={filter.key}
+                                value={
+                                    filterValues[filter.key] ||
+                                    "All"
+                                }
+                                onChange={(e) =>
+                                    setFilterValues((prev) => ({
+                                        ...prev,
+                                        [filter.key]:
+                                            e.target.value
+                                    }))
+                                }
+                                className="text-sm border border-zinc-200 rounded-lg bg-white px-3 py-2"
+                            >
+                                <option value="All">
+                                    All {filter.label}
+                                </option>
+
+                                {filter.options.map((option) => (
+                                    <option
+                                        key={option}
+                                        value={option}
+                                    >
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Table */}
+            <div className="w-full bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead>
+                            <tr className="border-b border-zinc-200 bg-zinc-50">
+                                {headers.map((head, i) => (
+                                    <th
+                                        key={i}
+                                        className="p-4 font-semibold text-slate-600"
+                                    >
+                                        {head}
+                                    </th>
+                                ))}
                             </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-zinc-100">
+                            {paginatedData.length > 0 ? (
+                                paginatedData.map((item, idx) =>
+                                    renderRow(item, idx)
+                                )
+                            ) : (
+                                <tr>
+                                    <td
+                                        colSpan={headers.length}
+                                        className="p-6 text-center text-zinc-500"
+                                    >
+                                        No records found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Pagination */}
+            <div className="bg-white border border-zinc-200 rounded-xl px-4 py-3 shadow-sm flex items-center justify-between text-sm text-zinc-600">
+
+                <div>
+                    Showing{" "}
+                    <span className="font-semibold text-zinc-900">
+                        {filteredData.length === 0
+                            ? 0
+                            : (currentPage - 1) *
+                            itemsPerPage +
+                            1}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-semibold text-zinc-900">
+                        {Math.min(
+                            currentPage * itemsPerPage,
+                            filteredData.length
                         )}
-                    </tbody>
-                </table>
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold text-zinc-900">
+                        {filteredData.length}
+                    </span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className="p-1.5 border rounded disabled:opacity-40"
+                    >
+                        <ChevronsLeft size={16} />
+                    </button>
+
+                    <button
+                        onClick={() =>
+                            setCurrentPage((p) =>
+                                Math.max(1, p - 1)
+                            )
+                        }
+                        disabled={currentPage === 1}
+                        className="p-1.5 border rounded disabled:opacity-40"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+
+                    <span className="px-3">
+                        Page {currentPage} of {totalPages}
+                    </span>
+
+                    <button
+                        onClick={() =>
+                            setCurrentPage((p) =>
+                                Math.min(totalPages, p + 1)
+                            )
+                        }
+                        disabled={currentPage === totalPages}
+                        className="p-1.5 border rounded disabled:opacity-40"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+
+                    <button
+                        onClick={() =>
+                            setCurrentPage(totalPages)
+                        }
+                        disabled={currentPage === totalPages}
+                        className="p-1.5 border rounded disabled:opacity-40"
+                    >
+                        <ChevronsRight size={16} />
+                    </button>
+                </div>
             </div>
         </div>
     );
