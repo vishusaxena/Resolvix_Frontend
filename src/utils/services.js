@@ -13,3 +13,17 @@ export const formatDate = (date) => {
 
   return `${day}-${month}-${year}`;
 };
+
+export const getInitials = (name = "") => {
+  if (!name.trim()) return "";
+
+  const parts = name.trim().split(/\s+/);
+
+  // Single name → V
+  if (parts.length === 1) {
+    return parts[0][0].toUpperCase();
+  }
+
+  // First + Last → VS
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};

@@ -333,42 +333,51 @@ export const Modal = ({
     title = "Modal Title",
     subtitle,
     children,
-    primaryLabel = "Confirm",
-    onPrimaryClick,
-    secondaryLabel = "Cancel",
-    showFooter = true,
-    size = "md" // sm, md, lg, xl
+    footerButtons, // Array of element nodes/ModalButtons or custom jsx
+    size = "md", // 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
+    closeOnBackdropClick = true,
 }) => {
 
-    // Close modal on 'Escape' key press
+    // Bind local window loop parameters for structural layout dismissals
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape') onClose();
         };
-        if (isOpen) window.addEventListener('keydown', handleEscape);
-        return () => window.removeEventListener('keydown', handleEscape);
+        if (isOpen) {
+            window.addEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'hidden'; // Lock background scrolling
+        }
+        return () => {
+            window.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = '';
+        };
     }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
-    // Configuration for modal sizing
+    // Upgraded sizing allocations
     const sizeClasses = {
         sm: 'max-w-md',
         md: 'max-w-lg',
         lg: 'max-w-2xl',
-        xl: 'max-w-4xl'
+        xl: 'max-w-4xl',
+        '2xl': 'max-w-6xl',
+        'full': 'max-w-[calc(100vw-2rem)] h-[calc(100vh-2rem)]'
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs transition-opacity animate-fade-in">
-            {/* Backdrop overlay trigger */}
-            <div className="absolute inset-0" onClick={onClose} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-xs animate-fade-in">
+            {/* Backdrop wrapper handling trigger parameters */}
+            <div
+                className="absolute inset-0 cursor-default"
+                onClick={closeOnBackdropClick ? onClose : undefined}
+            />
 
-            {/* Modal Card Container */}
-            <div className={`w-full ${sizeClasses[size]} bg-white rounded-xl border border-zinc-200 shadow-xl relative z-10 overflow-hidden transform transition-all duration-300 scale-100`}>
+            {/* Main Modal Surface Card */}
+            <div className={`w-full ${sizeClasses[size]} bg-white rounded-xl border border-zinc-200 shadow-2xl relative z-10 flex flex-col overflow-hidden max-h-[calc(100vh-2rem)] transform scale-100 transition-all duration-300`}>
 
-                {/* Header Section */}
-                <div className="px-6 py-5 border-b border-zinc-100 flex items-start justify-between">
+                {/* Header Section Container */}
+                <div className="px-6 py-5 border-b border-zinc-100 flex items-start justify-between bg-white shrink-0">
                     <div>
                         <h3 className="text-xl font-bold text-zinc-900 tracking-tight">
                             {title}
@@ -379,10 +388,11 @@ export const Modal = ({
                             </p>
                         )}
                     </div>
-                    {/* Close Icon Cross */}
+
+                    {/* Native Anchor Close Trigger Element */}
                     <button
                         onClick={onClose}
-                        className="text-zinc-400 hover:text-zinc-600 p-1 rounded-lg transition-colors focus:outline-none"
+                        className="text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 p-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-200"
                         aria-label="Close modal"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -391,32 +401,15 @@ export const Modal = ({
                     </button>
                 </div>
 
-                {/* Content Body Section */}
-                <div className="p-6 overflow-y-auto max-h-[calc(100vh-16rem)] text-zinc-700 text-sm">
+                {/* Main Yield Content View Window */}
+                <div className="p-6 overflow-y-auto text-zinc-700 text-sm flex-1">
                     {children}
                 </div>
 
-                {/* Footer Actions Section */}
-                {showFooter && (
-                    <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex items-center justify-end gap-3">
-                        {secondaryLabel && (
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="px-4 py-2 text-sm font-medium text-zinc-700 bg-white border border-zinc-300 rounded-lg hover:bg-zinc-50 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                            >
-                                {secondaryLabel}
-                            </button>
-                        )}
-                        {primaryLabel && (
-                            <button
-                                type="button"
-                                onClick={onPrimaryClick}
-                                className="px-4 py-2 text-sm font-medium text-white bg-[#00A86B] rounded-lg hover:bg-[#00945e] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 shadow-sm"
-                            >
-                                {primaryLabel}
-                            </button>
-                        )}
+                {/* Composite Footer Actions Container */}
+                {footerButtons && (
+                    <div className="px-6 py-4 bg-zinc-50/70 border-t border-zinc-100 flex items-center justify-end gap-3 shrink-0">
+                        {footerButtons}
                     </div>
                 )}
             </div>
@@ -504,3 +497,51 @@ export function SelectBox({
         </div>
     );
 }
+
+export const Button = ({
+    children,
+    onClick,
+    variant = "primary", // primary, secondary, accent, danger, ghost, outline
+    size = "md",         // sm, md, lg, xl
+    className = "",      // Tailored styling injects
+    type = "button",
+    disabled = false,
+    fullWidth = false,
+    ...props
+}) => {
+
+    // Core structural mechanics
+    const baseClasses = "inline-flex items-center justify-center font-medium tracking-tight transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none";
+
+    // Theme configurations (Using zinc/violet styling palettes matching modern setups)
+    const variantClasses = {
+        primary: "bg-zinc-900 text-white hover:bg-zinc-800 border border-transparent focus:ring-zinc-950 shadow-xs",
+        secondary: "bg-zinc-100 text-zinc-900 hover:bg-zinc-200 border border-transparent focus:ring-zinc-300",
+        accent: "bg-violet-600 text-white hover:bg-violet-700 border border-transparent focus:ring-violet-500 shadow-sm",
+        danger: "bg-rose-600 text-white hover:bg-rose-700 border border-transparent focus:ring-rose-500 shadow-xs",
+        outline: "bg-transparent text-zinc-700 border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 focus:ring-zinc-200",
+        ghost: "bg-transparent text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 focus:ring-zinc-300",
+    };
+
+    // Sizing system scale matrix
+    const sizeClasses = {
+        sm: "text-xs px-3 py-1.5 gap-1.5 rounded-md",
+        md: "text-sm px-4 py-2 gap-2",
+        lg: "text-base px-5 py-2.5 gap-2.5",
+        xl: "text-lg px-6 py-3 gap-3 rounded-xl",
+    };
+
+    const widthClass = fullWidth ? "w-full flex" : "";
+
+    return (
+        <button
+            type={type}
+            onClick={onClick}
+            disabled={disabled}
+            className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`}
+            {...props}
+        >
+            {children}
+        </button>
+    );
+};

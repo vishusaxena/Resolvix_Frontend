@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import TenantConfig from "./TenantConfig.jsx";
 import UserDashboard from "./UserDashboard.jsx";
 import HODDashboard from "./HODDashboard.jsx";
+import GrievanceOfficerDashboard from "./GrievanceOfficerDashboard.jsx";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -24,6 +25,9 @@ const Dashboard = () => {
       {/* Structural Offset - Takes exactly the remaining view height */}
       {user.role === "Superadmin" && <TenantConfig />}
       {user.role === "Department Head" && <HODDashboard />}
+      {user.role === "Grievance Officer" && <GrievanceOfficerDashboard />}
+
+
     </div>
   );
 };

@@ -1,12 +1,8 @@
 import React from 'react';
-import {
-    LayoutDashboard, BarChart3, Files, FilePlus, FileClock,
-    Clock, CheckCircle, Archive, UserCheck, RefreshCw,
-    GitFork, LogOut, Bell, HelpCircle, AlertTriangle
-} from 'lucide-react';
+import { Bell, HelpCircle, AlertTriangle } from 'lucide-react';
+import { getInitials } from '../../utils/services';
 
 const DashboardView = ({ userData }) => {
-    // Mock data matching watermarked_img_14537528090858806961.png specs
     const stats = [
         { label: 'Total Pending', value: '42', trend: 'up', color: 'text-emerald-600' },
         { label: 'Average Resolution Time', value: '4.2 days', trend: 'stable', color: 'text-emerald-600' },
@@ -29,18 +25,32 @@ const DashboardView = ({ userData }) => {
         { id: 5, text: 'Acknowledge SLA Missed for #1056' },
     ];
 
+    // --- CHART MATRIX DATA FEEDS ---
+    const DEPT_PERFORMANCE_DATA = [
+        { label: 'Unit A', facility: 45, it: 30, admin: 15 },
+        { label: 'Unit B', facility: 35, it: 55, admin: 20 },
+        { label: 'Unit C', facility: 60, it: 25, admin: 10 },
+        { label: 'Unit D', facility: 40, it: 40, admin: 35 },
+    ];
+
+    const MONTHLY_TREND_DATA = [
+        { month: 'Jan', submissions: 30, resolutions: 20 },
+        { month: 'Feb', submissions: 45, resolutions: 38 },
+        { month: 'Mar', submissions: 35, resolutions: 42 },
+        { month: 'Apr', submissions: 60, resolutions: 50 },
+        { month: 'May', submissions: 55, resolutions: 58 },
+        { month: 'Jun', submissions: 70, resolutions: 62 },
+    ];
+
     return (
-        <div className="flex-1 bg-zinc-50 text-zinc-800 min-h-screen  overflow-y-auto relative selection:bg-emerald-500/20">
-
-
+        <div className="flex-1 bg-zinc-50 text-zinc-800 min-h-screen overflow-y-auto relative selection:bg-emerald-500/20">
 
             {/* MAIN VIEWPORT FRAME */}
             <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
 
-                {/* TOP NAVBAR (Referencing structural identity fields from watermarked_img_14537528090858806961.png) */}
-                <header className="h-16  bg-white border-b border-neutral-200 flex items-center justify-between px-6 sticky top-0 z-10">
+                {/* TOP NAVBAR */}
+                <header className="h-16 bg-white border-b border-neutral-200 flex items-center justify-between px-6 sticky top-0 z-10">
                     <div className="flex items-center space-x-4">
-                        {/* TIBL Corporate Tenant Identity Logo Placement */}
                         <div className="flex items-center bg-neutral-100 px-3 py-1.5 rounded-md border border-neutral-200">
                             <span className="text-xs font-black tracking-widest text-emerald-800">{userData.tenantName}</span>
                         </div>
@@ -54,7 +64,9 @@ const DashboardView = ({ userData }) => {
                                 <p className="text-xs text-neutral-500">{userData.tenantName} - Management Engine</p>
                             </div>
                             <div className="w-9 h-9 rounded-full bg-neutral-200 overflow-hidden border border-neutral-300">
-                                <div className="w-full h-full bg-slate-400 flex items-center justify-center text-white text-xs font-bold">SC</div>
+                                <div className="w-full h-full bg-slate-400 flex items-center justify-center text-white text-xs font-bold">
+                                    {getInitials(userData.name)}
+                                </div>
                             </div>
                         </div>
                         <div className="flex items-center space-x-2 text-neutral-500">
@@ -75,7 +87,7 @@ const DashboardView = ({ userData }) => {
                     {/* Section View Heading Label */}
                     <div>
                         <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-                            HOD Grievance Dashboard - {userData.department}
+                            HOD Grievance Dashboard - <span className="text-neutral-500 font-medium">{userData.department}</span>
                         </h1>
                     </div>
 
@@ -87,10 +99,9 @@ const DashboardView = ({ userData }) => {
                                     <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">{card.label}</p>
                                     <p className="text-2xl font-bold text-neutral-900 mt-2">{card.value}</p>
                                 </div>
-                                {/* Dynamic mini trend indicator placeholder */}
                                 <div className="mt-4 pt-2 border-t border-neutral-50 flex items-center justify-between text-xs">
-                                    <span className={`${card.color} font-medium flex items-center`}>
-                                        ● Live Tracking
+                                    <span className={`${card.color} font-medium flex items-center gap-1.5`}>
+                                        <span className="h-2 w-2 rounded-full bg-current animate-pulse" /> Live Tracking
                                     </span>
                                     <div className="w-24 h-6 opacity-40 bg-gradient-to-r from-transparent to-emerald-200 rounded"></div>
                                 </div>
@@ -101,7 +112,7 @@ const DashboardView = ({ userData }) => {
                     {/* GRID ROW 2: MAIN CHARTS & DETAILED CASE ANALYTICS */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                        {/* Department Performance Data Block Chart Mockup */}
+                        {/* Department Performance Stacked Column Visualization */}
                         <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-neutral-200 shadow-sm flex flex-col justify-between">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-base font-bold text-neutral-800">Department Performance at a Glance</h3>
@@ -112,9 +123,36 @@ const DashboardView = ({ userData }) => {
                                 </div>
                             </div>
 
-                            {/* Visual Presentation Core Grid Layout Component */}
-                            <div className="h-64 bg-neutral-50 rounded-lg border border-dashed border-neutral-200 flex items-center justify-center text-neutral-400 text-sm font-medium">
-                                [ Interactive Bar Chart Component Content Frame Window ]
+                            {/* Pure Flexbox-Stacked Modular Column Graph Matrix */}
+                            <div className="h-64 bg-neutral-50/50 rounded-lg border border-neutral-200 p-4 flex items-end justify-around gap-2 pt-8">
+                                {DEPT_PERFORMANCE_DATA.map((item, index) => {
+                                    const total = item.facility + item.it + item.admin;
+                                    // Scale configuration based on a max capacity metric index of 140
+                                    const facHeight = (item.facility / 140) * 100;
+                                    const itHeight = (item.it / 140) * 100;
+                                    const admHeight = (item.admin / 140) * 100;
+
+                                    return (
+                                        <div key={index} className="flex flex-col items-center gap-2 group h-full justify-end flex-1 max-w-[50px]">
+                                            {/* Data context popup panel */}
+                                            <div className="opacity-0 group-hover:opacity-100 absolute mb-48 bg-neutral-900 text-white text-[10px] p-2 rounded pointer-events-none transition-opacity shadow-lg z-20 text-left font-mono">
+                                                <p className="border-b border-neutral-700 font-bold mb-1 pb-0.5">Total: {total}</p>
+                                                <p className="text-emerald-400">Facility: {item.facility}</p>
+                                                <p className="text-amber-400">IT: {item.it}</p>
+                                                <p className="text-rose-400">Admin: {item.admin}</p>
+                                            </div>
+
+                                            <div className="w-full flex flex-col justify-end h-full rounded-t overflow-hidden shadow-xs">
+                                                <div style={{ height: `${admHeight}%` }} className="bg-rose-600 w-full hover:brightness-95 transition-all" />
+                                                <div style={{ height: `${itHeight}%` }} className="bg-amber-500 w-full hover:brightness-95 transition-all" />
+                                                <div style={{ height: `${facHeight}%` }} className="bg-emerald-600 w-full hover:brightness-95 transition-all" />
+                                            </div>
+                                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide truncate max-w-full">
+                                                {item.label}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -155,7 +193,7 @@ const DashboardView = ({ userData }) => {
                     {/* GRID ROW 3: TREND LINES & ACTION WIDGETS */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                        {/* Monthly Trend Data Monitor Block Chart Window */}
+                        {/* Responsive SVG Area/Line Micro-Engine */}
                         <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-neutral-200 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-base font-bold text-neutral-800">Monthly Trend Analysis</h3>
@@ -164,8 +202,49 @@ const DashboardView = ({ userData }) => {
                                     <span className="flex items-center"><span className="w-2.5 h-2.5 bg-neutral-400 rounded-full mr-1"></span>Resolution</span>
                                 </div>
                             </div>
-                            <div className="h-48 bg-neutral-50 rounded-lg border border-dashed border-neutral-200 flex items-center justify-center text-neutral-400 text-sm font-medium">
-                                [ Monthly Trend Line Area Visualization Engine ]
+
+                            {/* Native Vector SVG Coordinate Grid Rendering */}
+                            <div className="h-48 bg-neutral-50/50 rounded-lg border border-neutral-200 p-2 relative">
+                                <svg viewBox="0 0 600 160" className="w-full h-full overflow-visible">
+                                    {/* Submissions Area Fill and Line Track */}
+                                    <path
+                                        d="M 10 140 L 110 110 L 210 125 L 310 80 L 410 90 L 510 60 L 510 150 L 10 150 Z"
+                                        className="fill-emerald-500/10"
+                                    />
+                                    <path
+                                        d="M 10 140 L 110 110 L 210 125 L 310 80 L 410 90 L 510 60"
+                                        fill="none"
+                                        stroke="#059669"
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+
+                                    {/* Resolutions Line Track */}
+                                    <path
+                                        d="M 10 150 L 110 125 L 210 115 L 310 95 L 410 85 L 510 75"
+                                        fill="none"
+                                        stroke="#9ca3af"
+                                        strokeWidth="2.5"
+                                        strokeDasharray="4 4"
+                                        strokeLinecap="round"
+                                    />
+
+                                    {/* Node Point Overlay Vectors */}
+                                    {[
+                                        { x: 10, y: 140 }, { x: 110, y: 110 }, { x: 210, y: 125 },
+                                        { x: 310, y: 80 }, { x: 410, y: 90 }, { x: 510, y: 60 }
+                                    ].map((pt, idx) => (
+                                        <circle key={idx} cx={pt.x} cy={pt.y} r="3.5" className="fill-white stroke-emerald-600 stroke-2" />
+                                    ))}
+                                </svg>
+
+                                {/* Horizontal Bottom Row X-Axis Tick Labels */}
+                                <div className="absolute bottom-1 left-0 right-0 px-3 flex justify-between text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                                    {MONTHLY_TREND_DATA.map((d, i) => (
+                                        <span key={i}>{d.month}</span>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 

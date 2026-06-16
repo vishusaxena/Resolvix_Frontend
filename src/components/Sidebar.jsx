@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getInitials } from '../utils/services';
 
 export default function Sidebar({ menuItems = [], activeTab, setActiveTab, collapsed, setCollapsed, onLogout }) {
     const { user, logout } = useAuth();
@@ -120,7 +121,7 @@ export default function Sidebar({ menuItems = [], activeTab, setActiveTab, colla
             <div className="border-t border-zinc-100 p-3 bg-zinc-50/50 space-y-3 shrink-0">
                 <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3 px-1'}`}>
                     <div className="w-9 h-9 rounded-full bg-zinc-200 border border-zinc-300 text-zinc-700 flex items-center justify-center font-bold text-xs shrink-0 shadow-inner">
-                        {user?.name ? user.name.substring(0, 2).toUpperCase() : 'SA'}
+                        {user?.name ? getInitials(user.name) : 'SA'}
                     </div>
                     {!collapsed && (
                         <div className="flex flex-col min-w-0">
