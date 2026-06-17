@@ -39,7 +39,7 @@ export default function Sidebar({ menuItems = [], activeTab, setActiveTab, colla
 
                 <IconComponent
                     size={18}
-                    className={`shrink-0 transition-colors ${isSelected ? 'text-emerald-400' : 'text-zinc-400 group-hover:text-zinc-600'
+                    className={`shrink-0 transition-colors ${isSelected ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-600'
                         }`}
                 />
 

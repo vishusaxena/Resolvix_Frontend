@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
 // --- START DUMMY DATA SECTIONS ---
 const MOCK_OFFICERS = [
@@ -82,8 +83,12 @@ const localFormatDate = (dateString) => {
 // --- END DUMMY DATA SECTIONS ---
 
 export default function AssigneeWorkloadView({ onAssign }) {
+    const [tenantData, setTenantData] = useState(() => {
+        const storedData = localStorage.getItem("tenantData")
+        return storedData ? JSON.parse(storedData) : {}
+    })
     const [grievances, setGrievances] = useState(MOCK_GRIEVANCES);
-    const [officers] = useState(MOCK_OFFICERS);
+    const [officers, setOfficers] = useState([]);
 
     // Tab filtering states ("All", "In Progress", "Resolved", "Closed")
     const [activeTab, setActiveTab] = useState("All");
@@ -129,6 +134,28 @@ export default function AssigneeWorkloadView({ onAssign }) {
         Closed: "bg-zinc-50 text-zinc-600 ring-zinc-500/10",
         Rejected: "bg-rose-50 text-rose-700 ring-rose-600/20",
     };
+
+
+    const FetchOfficers = async () => {
+        const response = await axios.get(`http://localhost:5000/api/data/officer-data?tenantId=${tenantData.tenantCode}&department=${tenantData.department}`);
+        if (response.data.status === "success") {
+            setOfficers(() => {
+                const finalData = response.data.data.map((user) => {
+                    return {
+                        id: user.userCode,
+                        name: user.name
+                    }
+                })
+                return finalData;
+            }); // Targets the normalized data array safely
+        } else {
+            setOfficers([]);
+        }
+    }
+
+    useEffect(() => {
+        FetchOfficers();
+    }, [])
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-zinc-50 font-sans">

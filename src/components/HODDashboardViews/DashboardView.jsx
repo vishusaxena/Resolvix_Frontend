@@ -87,7 +87,7 @@ const DashboardView = ({ userData }) => {
                     {/* Section View Heading Label */}
                     <div>
                         <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-                            HOD Grievance Dashboard - <span className="text-neutral-500 font-medium">{userData.department}</span>
+                            HOD Grievance Dashboard - <span className="text-neutral-500 font-medium">{userData.departmentL}</span>
                         </h1>
                     </div>
 

@@ -124,150 +124,168 @@ export default function AllGrievancesView({ grievances, headers, filters, viewDe
                 />
                 <Modal
                     isOpen={!!detailsModal}
-                    size="xl" // Bumped to xl for a more breathable side-by-side/grid feel
+                    size="xl"
                     onClose={() => setDetailsModal(null)}
                     title="Grievance Details"
                 >
                     {grievanceDetail && (
-                        <div className="space-y-6 p-1 text-zinc-800 antialiased">
+                        <div className="p-1 text-zinc-800 antialiased selection:bg-violet-100 selection:text-violet-900">
 
                             {/* Header Section */}
-                            <div className="border-b border-zinc-200 pb-5">
-                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                    <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
-                                        {grievanceDetail.grievanceDetails?.complaintSubject || "No Subject Specified"}
-                                    </h2>
-                                    <span className="inline-flex items-center rounded-md bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-600 ring-1 ring-inset ring-zinc-500/10">
-                                        {grievanceDetail.grievanceCode}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Metadata Grid (3 columns on desktop for better spatial balance) */}
-                            <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-5">
-                                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-4">
-                                    Ticket Overview
-                                </h3>
-                                <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-3">
+                            <div className="border-b border-zinc-100 pb-5 mb-6">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
-                                        <p className="text-xs font-medium text-zinc-400">Status</p>
-                                        <div className="mt-1">
-                                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${getStatusStyles(grievanceDetail.grievanceStatus)}`}>
-                                                {grievanceDetail.grievanceStatus}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <p className="text-xs font-medium text-zinc-400">Priority</p>
-                                        <div className="mt-1">
-                                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${getPriorityStyles(grievanceDetail.grievanceDetails?.complaintPriority)}`}>
-                                                {grievanceDetail.grievanceDetails?.complaintPriority}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <p className="text-xs font-medium text-zinc-400">Department</p>
-                                        <p className="mt-1 text-sm font-semibold text-zinc-800">
-                                            {grievanceDetail.grievanceDetails?.complaintDepartment?.departmentName || 'N/A'}
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <p className="text-xs font-medium text-zinc-400">Complaint Type</p>
-                                        <p className="mt-1 text-sm font-medium text-zinc-700">
-                                            {grievanceDetail.grievanceDetails?.complaintType}
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <p className="text-xs font-medium text-zinc-400">Tracking ID</p>
-                                        <p className="mt-1 text-sm font-mono text-zinc-700">
-                                            {grievanceDetail.trackingId}
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <p className="text-xs font-medium text-zinc-400">Created On</p>
-                                        <p className="mt-1 text-sm font-medium text-zinc-700">
-                                            {formatDate(grievanceDetail.createdAt)}
-                                        </p>
+                                        <span className="inline-flex items-center rounded-md bg-zinc-100 px-2.5 py-0.5 text-xs font-mono font-medium text-zinc-600 ring-1 ring-inset ring-zinc-500/10 mb-2">
+                                            {grievanceDetail.grievanceCode}
+                                        </span>
+                                        <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
+                                            {grievanceDetail.grievanceDetails?.complaintSubject || "No Subject Specified"}
+                                        </h2>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Complainant Details (Conditional Card) */}
-                            {grievanceDetail.grievanceDetails?.complaintType === "Named" && (
-                                <div className="rounded-xl border border-zinc-200 p-5">
-                                    <h3 className="text-sm font-semibold text-zinc-900 mb-4">
-                                        Complainant Information
-                                    </h3>
-                                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                                        <div className="space-y-0.5">
-                                            <p className="text-xs text-zinc-400 font-medium">Full Name</p>
-                                            <p className="text-sm font-medium text-zinc-800">
-                                                {grievanceDetail.grievanceDetails?.complainantName}
-                                            </p>
-                                        </div>
-                                        <div className="space-y-0.5">
-                                            <p className="text-xs text-zinc-400 font-medium">Email Address</p>
-                                            <p className="text-sm font-medium text-zinc-800 break-all">
-                                                {grievanceDetail.grievanceDetails?.complainantEmail}
-                                            </p>
-                                        </div>
-                                        <div className="space-y-0.5">
-                                            <p className="text-xs text-zinc-400 font-medium">Phone Number</p>
-                                            <p className="text-sm font-medium text-zinc-800">
-                                                {grievanceDetail.grievanceDetails?.complainantPhone}
-                                            </p>
+                            {/* Main Content Split Grid */}
+                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+                                {/* Left/Main Column: Content & Attachments */}
+                                <div className="space-y-6 lg:col-span-2">
+
+                                    {/* Detailed Description */}
+                                    <div className="space-y-2">
+                                        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                                            Detailed Description
+                                        </h3>
+                                        <div className="rounded-xl border border-zinc-200/80 bg-white p-5 text-sm leading-relaxed text-zinc-700 shadow-sm whitespace-pre-wrap">
+                                            {grievanceDetail.grievanceDetails?.complaintDetails}
                                         </div>
                                     </div>
-                                </div>
-                            )}
 
-                            {/* Description Block */}
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-semibold text-zinc-900">
-                                    Detailed Description
-                                </h3>
-                                <div className="rounded-xl border border-zinc-200 bg-white p-4 text-sm leading-relaxed text-zinc-600 shadow-sm whitespace-pre-wrap">
-                                    {grievanceDetail.grievanceDetails?.complaintDetails}
+                                    {/* Attachments Block */}
+                                    {grievanceDetail.grievanceDetails?.complaintAttachments?.length > 0 && (
+                                        <div className="space-y-3">
+                                            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                                                Attachments ({grievanceDetail.grievanceDetails.complaintAttachments.length})
+                                            </h3>
+                                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                                {grievanceDetail.grievanceDetails.complaintAttachments.map((file) => (
+                                                    <a
+                                                        key={file._id}
+                                                        href={file.url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="group flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-3.5 transition-all duration-200 hover:border-zinc-400 hover:bg-zinc-50 hover:shadow-sm"
+                                                    >
+                                                        <div className="flex items-center space-x-3 overflow-hidden">
+                                                            <svg className="h-5 w-5 flex-shrink-0 text-zinc-400 group-hover:text-zinc-600 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                                                            </svg>
+                                                            <span className="truncate text-sm font-medium text-zinc-600 group-hover:text-zinc-900 transition-colors">
+                                                                {file.fileName}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-xs font-semibold text-violet-600 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-1 group-hover:translate-x-0 pr-1">
+                                                            View &rarr;
+                                                        </span>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
 
-                            {/* Attachments Block */}
-                            {grievanceDetail.grievanceDetails?.complaintAttachments?.length > 0 && (
-                                <div className="space-y-3">
-                                    <h3 className="text-sm font-semibold text-zinc-900">
-                                        Attachments ({grievanceDetail.grievanceDetails.complaintAttachments.length})
-                                    </h3>
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                        {grievanceDetail.grievanceDetails.complaintAttachments.map((file) => (
-                                            <a
-                                                key={file._id}
-                                                href={file.url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="group flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-3.5 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-sm"
-                                            >
-                                                <div className="flex items-center space-x-3 overflow-hidden">
-                                                    {/* Minimalistic Attachment Icon Asset Placeholder */}
-                                                    <svg className="h-5 w-5 flex-shrink-0 text-zinc-400 group-hover:text-zinc-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
-                                                    </svg>
-                                                    <span className="truncate text-sm font-medium text-zinc-600 group-hover:text-zinc-900">
-                                                        {file.fileName}
-                                                    </span>
+                                {/* Right Column: Meta Sidebar Panel */}
+                                <div className="space-y-6 lg:col-span-1">
+
+                                    {/* Ticket Overview Card */}
+                                    <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-5 divide-y divide-zinc-200/60 space-y-4">
+                                        <div>
+                                            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">
+                                                Ticket Overview
+                                            </h3>
+                                            <div className="grid grid-cols-2 gap-4 lg:grid-cols-1">
+                                                <div>
+                                                    <p className="text-xs font-medium text-zinc-400">Status</p>
+                                                    <div className="mt-1">
+                                                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${getStatusStyles(grievanceDetail.grievanceStatus)}`}>
+                                                            {grievanceDetail.grievanceStatus}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <span className="text-xs font-semibold text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    View →
-                                                </span>
-                                            </a>
-                                        ))}
+
+                                                <div>
+                                                    <p className="text-xs font-medium text-zinc-400">Priority</p>
+                                                    <div className="mt-1">
+                                                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${getPriorityStyles(grievanceDetail.grievanceDetails?.complaintPriority)}`}>
+                                                            {grievanceDetail.grievanceDetails?.complaintPriority}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-4 space-y-3">
+                                            <div>
+                                                <p className="text-xs font-medium text-zinc-400">Department</p>
+                                                <p className="mt-0.5 text-sm font-semibold text-zinc-900">
+                                                    {grievanceDetail.grievanceDetails?.complaintDepartment?.departmentName || 'N/A'}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs font-medium text-zinc-400">Tracking ID</p>
+                                                <p className="mt-0.5 text-sm font-mono text-zinc-700 bg-zinc-100/80 px-1.5 py-0.5 rounded inline-block select-all">
+                                                    {grievanceDetail.trackingId}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs font-medium text-zinc-400">Created On</p>
+                                                <p className="mt-0.5 text-sm font-medium text-zinc-700">
+                                                    {formatDate(grievanceDetail.createdAt)}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs font-medium text-zinc-400">Classification</p>
+                                                <p className="mt-0.5 text-sm font-medium text-zinc-700">
+                                                    {grievanceDetail.grievanceDetails?.complaintType} Box
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    {/* Complainant Info Card (Conditional) */}
+                                    {grievanceDetail.grievanceDetails?.complaintType === "Named" && (
+                                        <div className="rounded-xl border border-zinc-200 p-5 bg-white shadow-sm">
+                                            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-4">
+                                                Complainant Information
+                                            </h3>
+                                            <div className="space-y-3.5">
+                                                <div className="border-b border-zinc-100 pb-2 last:border-0 last:pb-0">
+                                                    <p className="text-xs text-zinc-400 font-medium">Full Name</p>
+                                                    <p className="text-sm font-semibold text-zinc-900">
+                                                        {grievanceDetail.grievanceDetails?.complainantName}
+                                                    </p>
+                                                </div>
+                                                <div className="border-b border-zinc-100 pb-2 last:border-0 last:pb-0">
+                                                    <p className="text-xs text-zinc-400 font-medium">Email Address</p>
+                                                    <p className="text-sm font-medium text-zinc-700 break-all select-all">
+                                                        {grievanceDetail.grievanceDetails?.complainantEmail}
+                                                    </p>
+                                                </div>
+                                                <div className="last:border-0 last:pb-0">
+                                                    <p className="text-xs text-zinc-400 font-medium">Phone Number</p>
+                                                    <p className="text-sm font-medium text-zinc-700 select-all">
+                                                        {grievanceDetail.grievanceDetails?.complainantPhone}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+
+                            </div>
                         </div>
                     )}
                 </Modal>

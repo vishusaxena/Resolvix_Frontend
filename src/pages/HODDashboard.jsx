@@ -8,13 +8,13 @@ import axios from 'axios';
 import AssignGrievancesView from '../components/HODDashboardViews/AssignGrievancesView';
 import DepartmentTeamManagementView from '../components/HODDashboardViews/DepartmentTeamManagementView';
 const HODDashboard = () => {
-    const { tenantCode } = useParams();
     const token = localStorage.getItem("token");
     const [userData, setUserData] = useState({
         name: "",
         departmentL: "",
         role: "",
         tenantName: "",
+        tenantCode: ""
     })
     const [grievances, setGrievances] = useState({
         data: [],
@@ -59,7 +59,6 @@ const HODDashboard = () => {
 
     const GetDepartmentData = async () => {
         try {
-            console.log("called...", tenantCode);
             const response = await axios.get(`http://localhost:5000/api/auth/department-info`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -69,9 +68,10 @@ const HODDashboard = () => {
             if (response.data.status === 'success') {
                 setUserData({
                     name: response.data.data.name,
-                    department: response.data.data.department,
+                    departmentL: response.data.data.department,
                     role: response.data.data.role,
-                    tenantName: response.data.data.tenantName
+                    tenantName: response.data.data.tenantName,
+                    tenantCode: response.data.data.tenantCode
                 })
             }
         } catch (err) {
@@ -80,7 +80,6 @@ const HODDashboard = () => {
     };
     const GetGrievanceData = async () => {
         try {
-            console.log("called...", tenantCode);
             const response = await axios.get(`http://localhost:5000/api/grievances/department`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -102,7 +101,14 @@ const HODDashboard = () => {
     useEffect(() => {
         GetDepartmentData();
         GetGrievanceData();
-    }, [])
+    }, [userData.tenantCode])
+
+    useEffect(() => {
+        localStorage.setItem("tenantData", JSON.stringify({
+            tenantCode: userData.tenantCode,
+            department: userData.departmentL
+        }))
+    }, [userData.tenantCode, userData.departmentL])
 
     return (
         <div className="min-h-screen  bg-zinc-50 text-zinc-800 font-sans antialiased flex">
@@ -125,7 +131,7 @@ const HODDashboard = () => {
                     <AllGrievancesView grievances={grievances.data} headers={grievances.headers} filters={grievances.filters} viewDetails={grievances.viewDetails} />
                 )}
                 {activeTab === 'assign-grievances' && (
-                    <AssignGrievancesView grievances={grievances.data} />
+                    <AssignGrievancesView grievances={grievances.data}  />
                 )}
                 {activeTab === 'authorities' && (
                     <DepartmentTeamManagementView />
