@@ -1,4 +1,5 @@
 import axios from "axios";
+import { UserRoundPen } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 // --- START DUMMY DATA SECTIONS ---
@@ -82,27 +83,41 @@ const localFormatDate = (dateString) => {
 };
 // --- END DUMMY DATA SECTIONS ---
 
-export default function AssigneeWorkloadView({ onAssign }) {
+export default function AssigneeWorkloadView({ onRefresh, data, reset }) {
+    const token = localStorage.getItem("token");
     const [tenantData, setTenantData] = useState(() => {
         const storedData = localStorage.getItem("tenantData")
         return storedData ? JSON.parse(storedData) : {}
     })
-    const [grievances, setGrievances] = useState(MOCK_GRIEVANCES);
+    const [grievances, setGrievances] = useState(data);
     const [officers, setOfficers] = useState([]);
+    const [editingTicketId, setEditingTicketId] = useState(null);
 
     // Tab filtering states ("All", "In Progress", "Resolved", "Closed")
     const [activeTab, setActiveTab] = useState("All");
     const [activeOfficerId, setActiveOfficerId] = useState("unassigned");
 
-    const handleAssignTicket = (grievanceId, officerId) => {
-        setGrievances(prev =>
-            prev.map(g => g.grievanceId === grievanceId ? { ...g, assignedToId: officerId } : g)
-        );
-        if (onAssign) onAssign(grievanceId, officerId);
+    const handleAssignTicket = async (grievanceId, officerId, officerName) => {
+        const response = await axios.post(`http://localhost:5000/api/grievances/assign`, {
+            tenant: tenantData.tenantCode,
+            department: tenantData.department,
+            grievanceCode: grievanceId,
+            assignedTo: officerName,
+            assignedCode: officerId
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.status === "success") {
+            onRefresh();
+        }
+
     };
 
     // Calculate absolute status counts globally across all grievances for the tab UI markers
-    const getGlobalCount = (status) => grievances.filter(g => g.status === status).length;
+    const getGlobalCount = () => 5;
 
     // Helper filter to cleanly separate lists by status tabs dynamically
     const filterByTab = (list) => {
@@ -111,10 +126,10 @@ export default function AssigneeWorkloadView({ onAssign }) {
     };
 
     // Derived State Computations
-    const baseUnassigned = grievances.filter(g => !g.assignedToId);
+    const baseUnassigned = [];
     const displayedUnassigned = filterByTab(baseUnassigned);
 
-    const baseOfficerTickets = grievances.filter(g => g.assignedToId === activeOfficerId);
+    const baseOfficerTickets = [];
     const displayedOfficerTickets = filterByTab(baseOfficerTickets);
 
     const activeOfficerData = officers.find(o => o.id === activeOfficerId);
@@ -155,7 +170,7 @@ export default function AssigneeWorkloadView({ onAssign }) {
 
     useEffect(() => {
         FetchOfficers();
-    }, [])
+    }, [reset])
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-zinc-50 font-sans">
@@ -189,7 +204,7 @@ export default function AssigneeWorkloadView({ onAssign }) {
                 <div className="space-y-2 overflow-y-auto flex-1">
                     <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Handling Officers</span>
                     {officers.map((officer) => {
-                        const totalActiveCount = grievances.filter(g => g.assignedToId === officer.id).length;
+                        const totalActiveCount = [1].length;
                         const isActive = activeOfficerId === officer.id;
 
                         return (
@@ -221,7 +236,7 @@ export default function AssigneeWorkloadView({ onAssign }) {
                 {/* STATUS FILTER TABS WITH COUNTERS */}
                 <div className="border-b border-zinc-200 bg-white p-2 rounded-xl border flex flex-wrap gap-1 items-center shadow-xs">
                     {[
-                        { id: "All", label: "All Tickets", count: grievances.length },
+                        { id: "All", label: "All Tickets", count: grievances?.length },
                         { id: "In Progress", label: "In Progress", count: getGlobalCount("In Progress") },
                         { id: "Resolved", label: "Resolved", count: getGlobalCount("Resolved") },
                         { id: "Closed", label: "Closed", count: getGlobalCount("Closed") }
@@ -259,39 +274,124 @@ export default function AssigneeWorkloadView({ onAssign }) {
                                 <p className="text-sm text-zinc-500">Route these incoming filings to working staff profiles.</p>
                             </div>
 
-                            <div className="bg-white rounded-xl border border-zinc-200 divide-y divide-zinc-100 shadow-xs">
-                                {displayedUnassigned.length > 0 ? (
-                                    displayedUnassigned.map((ticket) => (
-                                        <div key={ticket.grievanceId} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-mono font-bold text-emerald-700">#{ticket.grievanceId}</span>
-                                                    <span className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${priorityColors[ticket.priority] || priorityColors.Low}`}>
-                                                        {ticket.priority}
-                                                    </span>
-                                                    <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset ${statusColors[ticket.status]}`}>
-                                                        {ticket.status}
-                                                    </span>
+                            <div className="bg-white rounded-xl border border-zinc-200 divide-y divide-zinc-100 shadow-sm overflow-hidden">
+                                {grievances?.length > 0 ? (
+                                    grievances.map((ticket) => {
+                                        // Check if the ticket should display the assignment dropdown
+                                        const isEditingOrUnassigned =
+                                            ticket.grievanceStatus === "Filed" ||
+                                            editingTicketId === ticket.grievanceCode;
+
+                                        return (
+                                            <div
+                                                key={ticket.grievanceCode}
+                                                className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:bg-zinc-50/70 transition-colors duration-200"
+                                            >
+                                                {/* Left Content Column */}
+                                                <div className="space-y-2 flex-1 min-w-0">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                                            #{ticket.grievanceCode}
+                                                        </span>
+
+                                                        <span
+                                                            className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold tracking-wide uppercase ${priorityColors[ticket.grievanceDetails?.complaintPriority] || priorityColors.Low
+                                                                }`}
+                                                        >
+                                                            {ticket.grievanceDetails?.complaintPriority || "Low"}
+                                                        </span>
+
+                                                        <span
+                                                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${statusColors[ticket.grievanceStatus]
+                                                                }`}
+                                                        >
+                                                            {ticket.grievanceStatus}
+                                                        </span>
+                                                    </div>
+
+                                                    <h4 className="text-base font-semibold text-zinc-900 truncate">
+                                                        {ticket.grievanceDetails?.complaintSubject}
+                                                    </h4>
+
+                                                    <p className="text-sm text-zinc-600 line-clamp-2 max-w-3xl leading-relaxed">
+                                                        {ticket.grievanceDetails?.complaintDetails}
+                                                    </p>
+
+                                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-zinc-400 font-medium">
+                                                        <span className="flex items-center gap-1">
+                                                            Filed On: <span className="text-zinc-500">{localFormatDate(ticket.createdAt)}</span>
+                                                        </span>
+                                                        <span className="text-zinc-300">•</span>
+                                                        <span>
+                                                            Department: <span className="text-zinc-500">{ticket.grievanceDetails?.complaintDepartment?.departmentName}</span>
+                                                        </span>
+                                                        <span className="text-zinc-300">•</span>
+                                                        <span>
+                                                            Type: <span className="text-zinc-500">{ticket.grievanceDetails?.complaintType}</span>
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <h4 className="font-semibold text-zinc-900">{ticket.title}</h4>
-                                                <p className="text-xs text-zinc-500 max-w-2xl">{ticket.description}</p>
-                                                <p className="text-[11px] text-zinc-400 pt-1">Filed On: {localFormatDate(ticket.dateRaised)}</p>
+
+                                                {/* Right Assignment Action Column */}
+                                                <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+                                                    {isEditingOrUnassigned ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <select
+                                                                onChange={(e) => {
+                                                                    if (!e.target.value) return;
+                                                                    const officerName = e.target.options[e.target.selectedIndex].dataset.name;
+                                                                    handleAssignTicket(ticket.grievanceCode, e.target.value, officerName);
+                                                                    // Reset the editing state after selection
+                                                                    setEditingTicketId(null);
+                                                                }}
+                                                                className="text-xs font-medium border-zinc-300 rounded-lg focus:ring-emerald-600 focus:border-emerald-600 bg-white py-2 pl-3 pr-10 shadow-xs cursor-pointer text-zinc-700"
+                                                                defaultValue=""
+                                                            >
+                                                                <option value="" disabled>
+                                                                    Assign to officer...
+                                                                </option>
+                                                                {officers.map((officer) => (
+                                                                    <option
+                                                                        key={officer.id}
+                                                                        value={officer.id}
+                                                                        data-name={officer.name}
+                                                                    >
+                                                                        {officer.name}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+
+                                                            {editingTicketId === ticket.grievanceCode && (
+                                                                <button
+                                                                    onClick={() => setEditingTicketId(null)}
+                                                                    className="text-xs font-medium text-zinc-400 hover:text-zinc-600 px-2 py-1 transition-colors"
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="inline-flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-700 px-3 py-1.5 rounded-lg text-xs font-medium">
+                                                            <span>Assigned To: <strong className="text-zinc-900">{ticket.assignedTo?.name}</strong></span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditingTicketId(ticket.grievanceCode)}
+                                                                className="p-1 rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-200/50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                                title="Reassign Ticket"
+                                                            >
+                                                                <UserRoundPen size={14} className="stroke-[2.5]" />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                <select
-                                                    onChange={(e) => handleAssignTicket(ticket.grievanceId, e.target.value)}
-                                                    className="text-xs border-zinc-300 rounded-md focus:ring-emerald-600 focus:border-emerald-600 bg-white py-1.5 pl-2 pr-8 shadow-xs"
-                                                    defaultValue=""
-                                                >
-                                                    <option value="" disabled>Assign to officer...</option>
-                                                    {officers.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                                                </select>
-                                            </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className="p-12 text-center">
-                                        <p className="text-sm text-zinc-400 italic">No unassigned grievances match the "{activeTab}" filter.</p>
+                                    <div className="p-16 text-center max-w-sm mx-auto">
+                                        <p className="text-sm text-zinc-400 italic">
+                                            No unassigned grievances match the "{activeTab}" filter.
+                                        </p>
                                     </div>
                                 )}
                             </div>

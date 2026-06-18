@@ -55,6 +55,7 @@ const HODDashboard = () => {
 
     const [activeTab, setActiveTab] = useState('dashboard');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [reset, setReset] = useState(false)
 
 
     const GetDepartmentData = async () => {
@@ -101,7 +102,7 @@ const HODDashboard = () => {
     useEffect(() => {
         GetDepartmentData();
         GetGrievanceData();
-    }, [userData.tenantCode])
+    }, [userData.tenantCode, reset])
 
     useEffect(() => {
         localStorage.setItem("tenantData", JSON.stringify({
@@ -131,7 +132,7 @@ const HODDashboard = () => {
                     <AllGrievancesView grievances={grievances.data} headers={grievances.headers} filters={grievances.filters} viewDetails={grievances.viewDetails} />
                 )}
                 {activeTab === 'assign-grievances' && (
-                    <AssignGrievancesView grievances={grievances.data}  />
+                    <AssignGrievancesView data={grievances.viewDetails} onRefresh={() => setReset(!reset)} reset={reset} />
                 )}
                 {activeTab === 'authorities' && (
                     <DepartmentTeamManagementView />
