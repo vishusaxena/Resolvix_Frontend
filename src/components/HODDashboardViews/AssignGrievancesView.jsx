@@ -96,6 +96,14 @@ export default function AssigneeWorkloadView({ onRefresh, data, reset }) {
     // Tab filtering states ("All", "In Progress", "Resolved", "Closed")
     const [activeTab, setActiveTab] = useState("All");
     const [activeOfficerId, setActiveOfficerId] = useState("unassigned");
+    const [refreshCounter, setRefreshCounter] = useState(0);
+    const [baseOfficerTickets, setBaseOfficerTickets] = useState([]);
+    const [ticketCounts, setTicketCounts] = useState({
+        "All": 0,
+        "In Progress": 0,
+        "Resolved": 0,
+        "Closed": 0
+    });
 
     const handleAssignTicket = async (grievanceId, officerId, officerName) => {
         const response = await axios.post(`http://localhost:5000/api/grievances/assign`, {
@@ -116,6 +124,26 @@ export default function AssigneeWorkloadView({ onRefresh, data, reset }) {
 
     };
 
+    const handleOfficersTicket = async (userId) => {
+        const response = await axios.get(`http://localhost:5000/api/grievances/ticket?tenantCode=${tenantData.tenantCode}&userCode=${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.status === "success") {
+            setBaseOfficerTickets(response.data.data);
+            setTicketCounts({
+                "All": response.data.data.length,
+                "In Progress": response.data.data.filter(t => t.status === "In Progress").length,
+                "Resolved": response.data.data.filter(t => t.status === "Resolved").length,
+                "Closed": response.data.data.filter(t => t.status === "Closed").length
+            });
+
+        }
+
+    };
+
     // Calculate absolute status counts globally across all grievances for the tab UI markers
     const getGlobalCount = () => 5;
 
@@ -129,7 +157,7 @@ export default function AssigneeWorkloadView({ onRefresh, data, reset }) {
     const baseUnassigned = [];
     const displayedUnassigned = filterByTab(baseUnassigned);
 
-    const baseOfficerTickets = [];
+
     const displayedOfficerTickets = filterByTab(baseOfficerTickets);
 
     const activeOfficerData = officers.find(o => o.id === activeOfficerId);
@@ -172,6 +200,10 @@ export default function AssigneeWorkloadView({ onRefresh, data, reset }) {
         FetchOfficers();
     }, [reset])
 
+    useEffect(() => {
+        setGrievances(data);
+    }, [refreshCounter, data]);
+
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-zinc-50 font-sans">
 
@@ -210,7 +242,7 @@ export default function AssigneeWorkloadView({ onRefresh, data, reset }) {
                         return (
                             <button
                                 key={officer.id}
-                                onClick={() => setActiveOfficerId(officer.id)}
+                                onClick={() => { setActiveOfficerId(officer.id); handleOfficersTicket(officer.id); }}
                                 className={`w-full text-left p-3 rounded-lg border transition-all flex items-center justify-between ${isActive
                                     ? "bg-emerald-50 border-emerald-500 ring-1 ring-emerald-500 text-emerald-900"
                                     : "bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-700"
@@ -222,7 +254,7 @@ export default function AssigneeWorkloadView({ onRefresh, data, reset }) {
                                 </div>
                                 <span className={`font-mono text-xs px-2.5 py-0.5 rounded-full font-bold shrink-0 ${isActive ? "bg-emerald-600 text-white" : "bg-zinc-100 text-zinc-600"
                                     }`}>
-                                    {totalActiveCount}
+                                    {ticketCounts["All"]} {/* Display total tickets for this officer */}
                                 </span>
                             </button>
                         );
@@ -343,6 +375,7 @@ export default function AssigneeWorkloadView({ onRefresh, data, reset }) {
                                                                     handleAssignTicket(ticket.grievanceCode, e.target.value, officerName);
                                                                     // Reset the editing state after selection
                                                                     setEditingTicketId(null);
+                                                                    setRefreshCounter(prev => prev + 1); // Trigger a refresh to update the list
                                                                 }}
                                                                 className="text-xs font-medium border-zinc-300 rounded-lg focus:ring-emerald-600 focus:border-emerald-600 bg-white py-2 pl-3 pr-10 shadow-xs cursor-pointer text-zinc-700"
                                                                 defaultValue=""
